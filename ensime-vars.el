@@ -135,7 +135,7 @@ is saved."
     (param . (:slant italic))
     (class . font-lock-type-face)
     (trait .  (:inherit font-lock-type-face :slant italic))
-    (object . (:inherit font-lock-type-face :underline t))
+    (object . (:inherit font-lock-type-face :weight semi-bold))
     (package . font-lock-preprocessor-face))
   "Faces for semantic highlighting. Symbol types not mentioned here
 will not be requested from server.  The format is an alist of the form
