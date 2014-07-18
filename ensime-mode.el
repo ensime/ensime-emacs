@@ -517,7 +517,7 @@ CACHE-DIR is the server's persistent output directory."
 	(append-to-file (concat "\njavaOptions += \"" flag "\"\n") nil buildfile))
       (message "Starting an ENSIME server in %s" buffer)
       (if (executable-find ensime-sbt-command)
-        (comint-exec (current-buffer) buffer ensime-sbt-command nil (list "run"))
+          (comint-exec (current-buffer) buffer ensime-sbt-command nil (list "run"))
         (error "sbt command not found")))
     (let ((proc (get-buffer-process (current-buffer))))
       (ensime-set-query-on-exit-flag proc)
