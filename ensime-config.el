@@ -314,10 +314,28 @@
 		   nil))
 	file))))
 
+(defun check-config-file (file-name)
+  "Raise error on incorrect format, otherwise do nothing."
+  (defun trim-string (string)
+    "Remove white spaces in beginning and ending of STRING. White space here is any of: space, tab, emacs newline (line feed, ASCII 10)."
+    (replace-regexp-in-string "\\`[ \t\n]*" "" (replace-regexp-in-string "[ \t\n]*\\'" "" string)))
+  (defun read-lines (filePath)
+    "Return a list of lines of a file at filePath."
+    (with-temp-buffer
+      (insert-file-contents filePath)
+      (split-string (buffer-string) "\n" t)))
+  (cl-loop for line in (read-lines incorrect-ensime-file)
+           do (if (or (eq 0 (string-width (trim-string line)))
+                      (equal (substring (trim-string line) 0 1) ":")
+                      (equal (substring (trim-string line) 0 1) "(")
+                      (equal (substring (trim-string line) 0 1) ")"))
+                  ()
+                (error "%s" "ENSIME: Wrong config file format. Stopping."))))
 
 (defun ensime-config-load (file-name &optional force-dir)
   "Load and parse a project config file. Return the resulting plist.
    The :root-dir setting will be deduced from the location of the project file."
+  (check-config-file file-name)
   (let ((dir (expand-file-name (file-name-directory file-name)))
 	(source-path (or force-dir buffer-file-name default-directory)))
     (save-excursion
