@@ -118,8 +118,6 @@
       (define-key map (kbd "M-.") 'ensime-edit-definition)
       (define-key map (kbd "M-,") 'ensime-pop-find-definition-stack)
       
-      (define-key map (kbd "C-x C-e") 'ensime-inf-eval-definition))
-
       (define-key map (kbd "M-n") 'ensime-forward-note)
       (define-key map (kbd "M-p") 'ensime-backward-note)
 
