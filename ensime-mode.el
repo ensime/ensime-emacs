@@ -66,6 +66,10 @@
       (define-key prefix-map (kbd "C-v t") 'ensime-print-type-at-point)
       (define-key prefix-map (kbd "C-v .") 'ensime-expand-selection-command)
 
+      (define-key prefix-map (kbd "C-v C-r") 'ensime-inf-eval-region)
+      (define-key prefix-map (kbd "C-v b") 'ensime-inf-eval-buffer)
+      (define-key prefix-map (kbd "C-v l") 'ensime-inf-load-file)    
+
       (define-key prefix-map (kbd "C-c c") 'ensime-typecheck-current-file)
       (define-key prefix-map (kbd "C-c a") 'ensime-typecheck-all)
       (define-key prefix-map (kbd "C-c r") 'ensime-reload-open-files)
@@ -113,7 +117,7 @@
       ;; Prefix-less shortcuts bindings...
       (define-key map (kbd "M-.") 'ensime-edit-definition)
       (define-key map (kbd "M-,") 'ensime-pop-find-definition-stack)
-
+      
       (define-key map (kbd "M-n") 'ensime-forward-note)
       (define-key map (kbd "M-p") 'ensime-backward-note)
 
