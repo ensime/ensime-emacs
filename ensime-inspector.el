@@ -297,8 +297,8 @@
 	       (progn (goto-char focus-point)
 		      (recenter-top-bottom))
 	     (goto-char (point-min)))
-	   ))
-       ))))
+	   )))))
+  (ensime-event-sig :type-inspector-shown info))
 
 
 
@@ -513,18 +513,22 @@ inspect the package of the current source file."
 	  (ensime-goto-source-location pos t)
 	(message "Sorry, no definition found.")))))
 
-(defun ensime-inspector-browse-doc ()
-  "Browse the documentation of the symbol at point (in an external browser)."
-  (interactive)
+(defun ensime--inspector-doc-url-at-point ()
+  "Returns the documentation url of the symbol at point."
   (let* ((props (text-properties-at (point)))
 	 (type-full-name (plist-get props :ensime-type-full-name))
 	 (member-name (plist-get props :ensime-member-name))
 	 (member-sig (plist-get props :ensime-member-signature))
 	 (package (plist-get props :ensime-package)))
     (if package
-	(browse-url (ensime-rpc-doc-uri-for-symbol package))
-      (browse-url (ensime-rpc-doc-uri-for-symbol
-		   type-full-name member-name member-sig)))))
+	(ensime-rpc-doc-uri-for-symbol package)
+      (ensime-rpc-doc-uri-for-symbol
+       type-full-name member-name member-sig))))
+
+(defun ensime-inspector-browse-doc ()
+  "Browse the documentation of the symbol at point (in an external browser)."
+  (interactive)
+  (browse-url (ensime--inspector-doc-url-at-point)))
 
 (defvar ensime-inspector-mode-map
   (let ((map (make-sparse-keymap)))
