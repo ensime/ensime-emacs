@@ -45,10 +45,6 @@
 (defvar ensime-test-env-classpath '()
   "Extra jars to include on testing classpath")
 
-(defvar ensime-ecukes-callbacks '()
-  "Asynchronous callback function indicating end of suite.")
-(make-variable-buffer-local 'ensime-ecukes-callbacks)
-
 (defvar ensime--test-had-failures nil)
 
 (defvar ensime--test-exit-on-finish (string= "t" (getenv "ENSIME_RUN_AND_EXIT")))
@@ -249,23 +245,10 @@
                 (when is-last
                   (setq ensime-async-handler-stack nil)
                   (pop ensime-test-queue)
-                  (when (not (null ensime-ecukes-callbacks))
-                    (dolist (cb ensime-ecukes-callbacks)
-                      (progn
-                        (message "Handler callback")
-                        (funcall cb)))
-                    (setq ensime-ecukes-callbacks nil))
                   (ensime-run-next-test)))
             (message "Got %s, expecting %s. Ignoring event."
                      event handler-event))
-          (dolist (callback ensime-ecukes-callbacks)
-            (let ((event-type (plist-get callback :event))
-                  (event-cb (plist-get callback :cb)))
-              (message "Processing event %s" event-type)
-              (if (equal event-type event)
-                  (progn
-                    (funcall event-cb)
-                    (setq ensime-ecukes-callbacks (delete callback ensime-ecukes-callbacks)))))))))))
+	  )))))
 
 
 (defun ensime-run-suite (suite)
@@ -289,7 +272,6 @@
                   ,title
                   ,@body))))
 
-
 (defmacro ensime-test-run-with-handlers (context &rest body)
   "Evaluate body in the context of an error handler. Handle errors by
    writing to the testing output buffer."
@@ -298,6 +280,7 @@
          (progn ,@body)
        (ensime-test-assert-failed
 	(setq ensime--test-had-failures t)
+	(kill-emacs 666)
         (message "Assertion failed at '%s': %s" ,context signal)
         (signal
          'ensime-test-interrupted
@@ -938,6 +921,80 @@
         (ensime-assert (not (null info)))
         (ensime-assert-equal
          (plist-get (plist-get info :type) :name) "String"))
+      (ensime-test-cleanup proj))))
+
+   (ensime-async-test
+    "Test inspector ui."
+    (let* ((proj (ensime-create-tmp-project
+                  `((:name
+                     "test.scala"
+                     :contents ,(ensime-test-concat-lines
+                                 "package pack.a"
+                                 "class A(value:/*1*/String){"
+                                 "}"))))))
+      (ensime-test-init-proj proj))
+
+
+    ((:connected connection-info))
+
+    ((:full-typecheck-finished val)
+     (ensime-test-with-proj
+      (proj src-files)
+      (ensime-typecheck-current-file)))
+
+    ((:full-typecheck-finished val)
+     (ensime-test-with-proj
+      (proj src-files)
+      (find-file (car src-files))
+      (goto-char (ensime-test-after-label "1"))
+      (ensime-inspect-type-at-point)))
+
+    ((:type-inspector-shown info)
+     (ensime-test-with-proj
+      (proj src-files)
+      (switch-to-buffer ensime-inspector-buffer-name)
+      (ensime-assert (search-forward-regexp "^class" nil t))
+      (ensime-assert (search-forward-regexp "^java.lang.String" nil t))
+      (backward-char 1)
+      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-type-full-name) "java.lang.String")
+      (ensime-assert (s-ends-with-p "java/lang/String.html" (ensime--inspector-doc-url-at-point)))
+
+      (goto-char 1)
+      (ensime-assert (search-forward-regexp "^scala.collection.immutable.StringLike" nil t))
+      (goto-char 1)
+      (ensime-assert (search-forward-regexp "^scala.collection.TraversableOnce" nil t))
+      (goto-char 1)
+      (ensime-assert (search-forward-regexp "^scala.collection.IndexedSeqOptimized" nil t))
+
+      (goto-char 1)
+      (ensime-assert (search-forward-regexp "^getBytes" nil t))
+      (backward-char 1)
+      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-type-full-name) "java.lang.String")
+      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-name) "getBytes")
+      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-signature)
+			   "(x$1: Int,x$2: Int,x$3: Array[Byte],x$4: Int): Unit")
+      (ensime-assert (s-ends-with-p "java/lang/String.html#getBytes-int-int-byte%3AA-int-"
+				    (ensime--inspector-doc-url-at-point)))
+
+      (ensime-assert (search-forward-regexp "^getBytes" nil t))
+      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-type-full-name) "java.lang.String")
+      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-name) "getBytes")
+      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-signature)
+			   "(x$1: String): Array[Byte]")
+
+      (ensime-assert (search-forward-regexp "Arra" nil t))
+      (push-button)
+      (ensime-assert (search-forward-regexp "^class$" nil t))
+      (ensime-assert (search-forward-regexp "^scala.Array\\[T\\]$" nil t))
+      (ensime-assert (search-forward-regexp "^(compan" nil t))
+      (push-button)
+      (ensime-assert (search-forward-regexp "^object$" nil t))
+      (ensime-assert (search-forward-regexp "^scala.Array\\$$" nil t))
+      (ensime-assert (search-forward-regexp "^(compan" nil t))
+      (push-button)
+      (ensime-assert (search-forward-regexp "^class$" nil t))
+      (ensime-assert (search-forward-regexp "^scala.Array\\[T\\]$" nil t))
+
       (ensime-test-cleanup proj))))
 
    (ensime-async-test
