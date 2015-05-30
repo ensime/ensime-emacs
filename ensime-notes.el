@@ -234,9 +234,53 @@ any buffer visiting the given file."
 
 (defun ensime-print-errors-at-point ()
   (interactive)
-  (let ((msgs (apply 'concat (ensime-errors-at (point)))))
+  (let ((msgs (append (ensime-errors-at (point))
+                      (ensime-implicit-notes-at (point)))))
     (when msgs
-      (message msgs))))
+      (message (mapconcat 'identity msgs "\n")))))
+
+(defun ensime-implicit-notes-at (point)
+  (labels
+      ((format-string (s)
+         (let ((lines (split-string s "\n")))
+           (if (>= (length lines) 5)
+               (mapconcat 'identity
+                          (list* (first lines) (second lines) "..." (last lines 2))
+                          "\n")
+             s)))
+       (implicit-infos-ending-on-line (point)
+         (save-excursion
+           (goto-char point)
+           (let ((infos (ensime-rpc-implicit-info-in-range (point-at-bol) (point-at-eol)))
+                 (begin (ensime-externalize-offset (point-at-bol)))
+                 (end (ensime-externalize-offset (point-at-eol))))
+             (remove-if #'(lambda (info)
+                            (or (< (plist-get info :end) begin)
+                                (> (plist-get info :end) end)))
+                        infos))))
+       (info-string (i)
+         (let* ((type (plist-get i :type))
+                (substr (buffer-substring (ensime-internalize-offset (plist-get i :start))
+                                          (ensime-internalize-offset (plist-get i :end))))
+                (formatted (format-string substr))
+                (fun-name (propertize (plist-get (plist-get i :fun) :name)
+                                      'face 'ensime-compile-warnline)))
+           (cond
+            ((eq type 'conversion)
+             (format "Implicit conversion of %s using %s" formatted fun-name))
+
+            ((eq type 'param)
+             (let* ((params (mapcar #'(lambda (p) (plist-get p :name))
+                                    (plist-get i :params)))
+                    (param-list (propertize (mapconcat #'identity params ", ")
+                                            'face 'ensime-compile-warnline))
+                    (fun-is-implicit (plist-get i :fun-is-implicit)))
+               (if fun-is-implicit
+                   (format "Implicit parameters added to call of %s(%s): (%s)" fun-name formatted param-list)
+                 (format "Implicit parameters added to call of %s: (%s)" formatted param-list))))))))
+
+    (delq nil (mapcar #'info-string (implicit-infos-ending-on-line point)))))
+
 
 (provide 'ensime-notes)
 
