@@ -1923,11 +1923,10 @@
       (goto-char (ensime-test-before-label "1"))
       (ensime-assert-equal
        (ensime-implicit-notes-at (point))
-       '("Implicit parameters added to call of stringToB(\"xxx\"): (zz)"
-         "Implicit conversion of \"xxx\" using stringToB"))
+       '("Implicit parameters added to call of stringToB(\"xxx\"): (zz: scala.Int)"
+         "Implicit conversion of \"xxx\" using stringToB: (s: String)(implicit x: Int)pack.B"))
 
       (ensime-test-cleanup proj))))
-
    (ensime-async-test
     "Test debugging scala project."
     (let* ((proj (ensime-create-tmp-project

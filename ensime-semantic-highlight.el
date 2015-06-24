@@ -44,7 +44,7 @@
                 (overlay-put ov 'before-string
                              (propertize "."
                                          'display
-                                         '(left-fringe question-mark ensime-compile-warnline))))
+                                         '(left-fringe breakpoint ensime-compile-infoline))))
 	      (overlay-put ov 'face face)
 	      (overlay-put ov 'ensime-sem-high-overlay t)
 	      (overlay-put ov 'ensime-sym-type type))))))))

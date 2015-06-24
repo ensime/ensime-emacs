@@ -384,7 +384,8 @@ defined."
    ((version<= (ensime-protocol-version conn) "0.8.9")
     (ensime-eval-async `(swank:init-project (:name "NA")) 'identity))
 
-   (t (ensime-eval-async `(swank:init-project) 'identity))))
+   ((version<= (ensime-protocol-version conn) "0.8.14")
+    (ensime-eval-async `(swank:init-project) 'identity))))
 
 
 (provide 'ensime-startup)

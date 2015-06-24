@@ -140,6 +140,15 @@ any buffer visiting the given file."
   "Face used for marking the specific region of an warning, if available."
   :group 'ensime-ui)
 
+(defface ensime-implicit-highlight
+  (if (facep 'flymake-infoline)
+      '((t (:inherit flymake-infoline)))
+  '((((supports :underline (:style wave)))
+     :underline (:style wave :color "blue"))
+    (t :inherit flymake-warnline)))
+  "Face used for marking a region where an implicit conversion was applied."
+  :group 'ensime-ui)
+
 (defun ensime-make-overlay (beg end tooltip-text visuals &optional mouse-face buf)
   "Allocate a ensime overlay in range BEG and END."
   (let ((ov (make-overlay beg end buf t t)))
@@ -241,13 +250,18 @@ any buffer visiting the given file."
 
 (defun ensime-implicit-notes-at (point)
   (labels
-      ((format-string (s)
+      ((format-body (s)
          (let ((lines (split-string s "\n")))
            (if (>= (length lines) 5)
                (mapconcat 'identity
                           (list* (first lines) (second lines) "..." (last lines 2))
                           "\n")
              s)))
+       (format-param (p)
+         (let ((name (propertize (plist-get p :name) 'face 'font-lock-variable-name-face))
+               (type (propertize (ensime-type-full-name-with-args (plist-get p :type))
+                                 'face 'font-lock-type-face)))
+           (concat name ": " type)))
        (implicit-infos-ending-on-line (point)
          (save-excursion
            (goto-char point)
@@ -260,24 +274,28 @@ any buffer visiting the given file."
                         infos))))
        (info-string (i)
          (let* ((type (plist-get i :type))
-                (substr (buffer-substring (ensime-internalize-offset (plist-get i :start))
-                                          (ensime-internalize-offset (plist-get i :end))))
-                (formatted (format-string substr))
-                (fun-name (propertize (plist-get (plist-get i :fun) :name)
-                                      'face 'ensime-compile-warnline)))
+                (substr (propertize (buffer-substring-no-properties
+                                     (ensime-internalize-offset (plist-get i :start))
+                                     (ensime-internalize-offset (plist-get i :end)))
+                                    'face 'font-lock-variable-name-face))
+                (body (format-body substr))
+                (fun (plist-get i :fun))
+                (fun-name (propertize (plist-get fun :name)
+                                      'face 'font-lock-function-name-face))
+                (fun-type (propertize
+                           (ensime-type-full-name-with-args (plist-get fun :type))
+                           'face 'font-lock-type-face)))
            (cond
             ((eq type 'conversion)
-             (format "Implicit conversion of %s using %s" formatted fun-name))
+             (format "Implicit conversion of %s using %s: %s" body fun-name fun-type))
 
             ((eq type 'param)
-             (let* ((params (mapcar #'(lambda (p) (plist-get p :name))
-                                    (plist-get i :params)))
-                    (param-list (propertize (mapconcat #'identity params ", ")
-                                            'face 'ensime-compile-warnline))
+             (let* ((params (mapcar #'format-param (plist-get i :params)))
+                    (param-list (mapconcat #'identity params ", "))
                     (fun-is-implicit (plist-get i :fun-is-implicit)))
                (if fun-is-implicit
-                   (format "Implicit parameters added to call of %s(%s): (%s)" fun-name formatted param-list)
-                 (format "Implicit parameters added to call of %s: (%s)" formatted param-list))))))))
+                   (format "Implicit parameters added to call of %s(%s): (%s)" fun-name body param-list)
+                 (format "Implicit parameters added to call of %s: (%s)" body param-list))))))))
 
     (delq nil (mapcar #'info-string (implicit-infos-ending-on-line point)))))
 
