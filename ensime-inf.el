@@ -147,6 +147,13 @@ Used for determining the default in the next one.")
       (ensime-set-query-on-exit-flag proc))
     ))
 
+(defun ensime-inf-run-and-import ()
+  "Run a Scala interpreter and import the package at point, if any."
+  (interactive)
+  (let ((pack (ensime-package-at-point)))
+    (ensime-inf-run-scala)
+    (when pack
+      (ensime-inf-import-package pack))))
 
 (defun ensime-inf-get-project-root ()
   "Return root path of the current project."
@@ -190,6 +197,14 @@ the current project's dependencies. Returns list of form (cmd [arg]*)"
         (switch-to-buffer-other-window ensime-inf-buffer-name)
       (ensime-inf-run-scala)))
   (goto-char (point-max)))
+
+(defun ensime-inf-switch-and-import ()
+  "Switch to the buffer containing the interpreter and import the package at point, if any."
+  (interactive)
+  (let ((pack (ensime-package-at-point)))
+    (ensime-inf-switch)
+    (when pack
+      (ensime-inf-import-package pack))))
 
 (defun ensime-inf-process-live-p (buffer-name)
   "Check if the process associated with the buffer is living."
@@ -272,6 +287,17 @@ the current project's dependencies. Returns list of form (cmd [arg]*)"
 					   (file-name-nondirectory file-name)))
   (ensime-inf-send-string ":load %s" file-name))
 
+(defun ensime-inf-import-package-at-point ()
+  "Import the contents of the package at point into the repl."
+  (interactive)
+  (let ((pack (ensime-package-at-point)))
+    (if pack
+        (ensime-inf-import-package pack)
+      (message "No package found."))))
+
+(defun ensime-inf-import-package (package-name)
+  "Import the contents of a package into the repl."
+  (ensime-inf-send-string "import %s._" package-name))
 
 (defun ensime-inf-quit-interpreter ()
   "Quit Scala interpreter."
