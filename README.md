@@ -6,6 +6,8 @@
 
 # ENSIME Emacs
 
+[![Join the chat at https://gitter.im/ensime/ensime-emacs](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ensime/ensime-emacs?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ENhanced Scala Interaction Mode for [Emacs](http://www.gnu.org/software/emacs/).
 
 See our [Quick Start Guide](http://github.com/ensime/ensime-server/wiki/Quick-Start-Guide) to learn how to install and start ENSIME.
