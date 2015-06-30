@@ -375,6 +375,10 @@ read a fully qualified path from the minibuffer."
                (ensime-type-inspector-show info focus-on-member)
              (message "Could not locate type named '%s'." p))))))))
 
+(defun ensime-package-at-point ()
+  "Return either the package path at point or the package point is in."
+  (or (ensime-package-path-at-point)
+      (ensime-package-containing-point)))
 
 (defun ensime-package-path-at-point ()
   "Return the package path at point, or nil if point is not in a package path."
@@ -422,8 +426,7 @@ read a fully qualified path from the minibuffer."
   "If cursor is over a package path, inspect that path. Otherwise,
 inspect the package of the current source file."
   (interactive)
-  (let ((pack (or (ensime-package-path-at-point)
-		  (ensime-package-containing-point))))
+  (let ((pack (ensime-package-at-point)))
     (if pack
 	(ensime-inspect-by-path pack)
       (message "No package declaration found."))))
