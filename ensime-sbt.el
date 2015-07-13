@@ -43,6 +43,7 @@
   (require 'ensime-macros))
 
 (require 'sbt-mode)
+(require 'hydra)
 
 (defgroup ensime-sbt nil
   "Support for sbt build REPL."
@@ -88,26 +89,67 @@
   (interactive)
   (sbt-command "clean"))
 
+(defun ensime-sbt-do-gen-ensime ()
+  (interactive)
+  (sbt-command "gen-ensime"))
+
 (defun ensime-sbt-do-package ()
   (interactive)
   (sbt-command "package"))
 
-(defun ensime-sbt-do-test ()
-  (interactive)
-  (sbt-command "test"))
+(defun ensime-sbt-test-dwim (command)
+  (let* ((file-name (or buffer-file-name default-directory))
+	 (test-command (cond
+			((string-match-p "src/test" file-name) command)
+			((string-match-p "src/it" file-name) (concat "it:" command))
+			((string-match-p "src/fun" file-name) (concat "fun:" command)))))
+    (if test-command
+	(sbt-command test-command)
+      (hydra-ensime-sbt-test/body))))
 
-(defun ensime-sbt-do-test-quick ()
+(defun ensime-sbt-do-test-dwim ()
   (interactive)
-  (sbt-command "testQuick"))
+  (ensime-sbt-test-dwim "test"))
 
-(defun ensime-sbt-do-test-only ()
+(defun ensime-sbt-do-test-quick-dwim ()
+  (interactive)
+  (ensime-sbt-test-dwim "testQuick"))
+
+(defun ensime-sbt-do-test-only-dwim ()
   (interactive)
   (let* ((impl-class
-            (or (ensime-top-level-class-closest-to-point)
-                (return (message "Could not find top-level class"))))
+	  (or (ensime-top-level-class-closest-to-point)
+	      (return (message "Could not find top-level class"))))
 	 (cleaned-class (replace-regexp-in-string "<empty>\\." "" impl-class))
 	 (command (concat "test-only" " " cleaned-class)))
-    (sbt-command command)))
+    (ensime-sbt-test-dwim command)))
+
+(defun ensime-guess-project-dir ()
+  (let ((ensime-file (ensime-config-find-file
+		      (or buffer-file-name default-directory))))
+    (if ensime-file
+	(file-name-directory ensime-file)
+      "Not Found")))
+
+(defhydra hydra-ensime-sbt-test (:hint nil :exit t)
+  "
+    ENSIME Project: %(ensime-guess-project-dir)
+
+^Unit^              ^Integration^           ^Functional^
+^^^^^^^^----------------------------------------------------
+_t_: test           _it_: it:test           _ft_: fun:test
+_k_: testQuick      _ik_: it:testQuick      _fk_: fun:testQuick
+
+----------------------------------------------------
+
+"
+  ("t"  (sbt-command "test"))
+  ("k"  (sbt-command "testQuick"))
+  ("it" (sbt-command "it:test"))
+  ("ik" (sbt-command "it:testQuick"))
+  ("ft" (sbt-command "fun:test"))
+  ("fk" (sbt-command "fun:testQuick"))
+  ("q" nil "cancel"))
 
 (provide 'ensime-sbt)
 
