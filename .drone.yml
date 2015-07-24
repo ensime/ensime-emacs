@@ -10,3 +10,4 @@ env:
   - SCALA_VERSION=2.11.7
   - EMACS=/opt/emacs-24.4/bin/emacs
   - UNDERCOVER=true
+  - COVERALLS_REPO_TOKEN=OhZ6uNJvQaFC64CSt8To3TrAmZAGDdJ1A
