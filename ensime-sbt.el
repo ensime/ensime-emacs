@@ -97,14 +97,29 @@
   (interactive)
   (sbt-command "package"))
 
+(defun ensime-sbt-find-subproject (file-name source-set config)
+  (when (and config source-set)
+    (let* ((subprojects (plist-get config :subprojects))
+	   (matches-subproject-dir? (lambda (dir)
+				      (string-match-p dir file-name)))
+	   (find-subproject (lambda (sp)
+			      (-any matches-subproject-dir? (plist-get sp :source-roots)))))
+      (-> (-find find-subproject subprojects)
+	  (plist-get :name)))))
+
 (defun ensime-sbt-test-dwim (command)
   (let* ((file-name (or buffer-file-name default-directory))
-	 (test-command (cond
-			((string-match-p "src/test" file-name) command)
-			((string-match-p "src/it" file-name) (concat "it:" command))
-			((string-match-p "src/fun" file-name) (concat "fun:" command)))))
-    (if test-command
-	(sbt-command test-command)
+	 (source-set (cond
+		      ((string-match-p "src/test" file-name) "")
+		      ((string-match-p "src/it" file-name) "it:")
+		      ((string-match-p "src/fun" file-name) "fun:")))
+	 (config (if (ensime-connected-p)
+		     (ensime-config)
+		   (let ((f (ensime-config-find)))
+		     (when f (ensime-config-load f)))))
+	 (subproject (ensime-sbt-find-subproject file-name source-set config)))
+    (if (and source-set subproject)
+	(sbt-command (concat subproject "/" source-set command))
       (hydra-ensime-sbt-test/body))))
 
 (defun ensime-sbt-do-test-dwim ()

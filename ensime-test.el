@@ -115,8 +115,8 @@
                       root-dir))
          (test-target-dir (expand-file-name "test-target" root-dir))
          (scala-jar (ensime--extract-scala-library-jar))
-	 (root-subproject `((:name "root"
-				   :module-name "root"
+	 (root-subproject `((:name ,(downcase (file-name-nondirectory root-dir))
+				   :module-name ,(downcase (file-name-nondirectory root-dir))
 				   :source-roots (,src-dir ,unit-test-dir ,int-test-dir)
 				   :depends-on-modules nil
 				   :compile-deps (,scala-jar)
@@ -506,9 +506,9 @@
 (defun ensime-test-cleanup (proj &optional no-del)
   "Delete temporary project files. Kill ensime buffers."
   (when ensime--test-pending-rpcs
-      (message "WARNING no response to messages: %s . Waiting some more."
-               ensime--test-pending-rpcs)
-      (sleep-for 10))
+    (message "WARNING no response to messages: %s . Waiting some more."
+	     ensime--test-pending-rpcs)
+    (sleep-for 10))
   (if ensime--test-pending-rpcs
       (progn
         (message "ERROR no response to messages: %s"
@@ -516,7 +516,7 @@
         (setq ensime--test-had-failures t))
     (message "OK no unreplied messages"))
   (ensime-kill-all-ensime-servers)
-  ; In Windows, we can't delete cache files until the server process has exited
+					; In Windows, we can't delete cache files until the server process has exited
   (sleep-for 1)
   (ensime-cleanup-tmp-project proj no-del))
 
@@ -970,11 +970,11 @@
     "Test ensime-inf-repl-config"
     (let ((test-config
            '(:scala-version "test-inf-repl-config"
-             :java-home "/x/y/jdk" :target "a" :compile-deps ("b" "c") :runtime-deps ("d" "e")
-             :java-flags ("flag1" "flag2")
-             :subprojects
-             ((:target "f" :compile-deps ("g") :runtime-deps ("h"))
-              (:target "i" :compile-deps ("j" "k") :runtime-deps ("l" "m"))))))
+			    :java-home "/x/y/jdk" :target "a" :compile-deps ("b" "c") :runtime-deps ("d" "e")
+			    :java-flags ("flag1" "flag2")
+			    :subprojects
+			    ((:target "f" :compile-deps ("g") :runtime-deps ("h"))
+			     (:target "i" :compile-deps ("j" "k") :runtime-deps ("l" "m"))))))
       (unwind-protect
           (progn
             (ensime-write-to-file (ensime--classpath-file "test-inf-repl-config")
@@ -985,25 +985,25 @@
                                              ensime--classpath-separator))
             (ensime-assert-equal (ensime-inf-repl-config test-config)
                                  `(:java "/x/y/jdk/bin/java"
-                                   :java-flags ("flag1" "flag2")
-                                   :classpath ,(ensime--build-classpath
-                                                '("/x/y/scala-compiler-2.11.5.jar" "/x/y/scala-reflect-2.11.5.jar"
-                                                  "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m")))))
+					 :java-flags ("flag1" "flag2")
+					 :classpath ,(ensime--build-classpath
+						      '("/x/y/scala-compiler-2.11.5.jar" "/x/y/scala-reflect-2.11.5.jar"
+							"a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m")))))
         (delete-file (ensime--classpath-file "test-inf-repl-config")))))
    (ensime-test
     "Test ensime-stacktrace-pick-lines-to-fold"
     (with-temp-buffer
       (insert (concat "java.util.NoSuchElementException: None.get\n"
-	"\tat scala.None$.get(Option.scala:347)\n"
-	"\tat scala.None$.get(Option.scala:345)\n"
-	"\tat akka.actor.ActorCell.invoke(ActorCell.scala:487)\n"
-	"\tat akka.dispatch.Mailbox.processMailbox(Mailbox.scala:254)\n"
-	"\tat akka.dispatch.Mailbox.run(Mailbox.scala:221)\n"
-	"\tat akka.dispatch.Mailbox.exec(Mailbox.scala:231)\n"
-	"\tat scala.concurrent.forkjoin.ForkJoinTask.doExec(ForkJoinTask.java:260)\n"
-	"\tat scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.pollAndExecAll(ForkJoinPool.java:1253)\n"
-	"\tat scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1346)\n"
-	"\tat scala.concurrent.forkjoin.ForkJoinPool.runWorker(ForkJoinPool.java:1979)\n"))
+		      "\tat scala.None$.get(Option.scala:347)\n"
+		      "\tat scala.None$.get(Option.scala:345)\n"
+		      "\tat akka.actor.ActorCell.invoke(ActorCell.scala:487)\n"
+		      "\tat akka.dispatch.Mailbox.processMailbox(Mailbox.scala:254)\n"
+		      "\tat akka.dispatch.Mailbox.run(Mailbox.scala:221)\n"
+		      "\tat akka.dispatch.Mailbox.exec(Mailbox.scala:231)\n"
+		      "\tat scala.concurrent.forkjoin.ForkJoinTask.doExec(ForkJoinTask.java:260)\n"
+		      "\tat scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.pollAndExecAll(ForkJoinPool.java:1253)\n"
+		      "\tat scala.concurrent.forkjoin.ForkJoinPool$WorkQueue.runTask(ForkJoinPool.java:1346)\n"
+		      "\tat scala.concurrent.forkjoin.ForkJoinPool.runWorker(ForkJoinPool.java:1979)\n"))
       (let ((lines-to-fold (ensime-stacktrace-pick-lines-to-fold '("at akka\\.*"))))
         (ensime-assert-equal '(7 6 5 4) lines-to-fold))))
    (ensime-test
@@ -2060,8 +2060,8 @@
     (:debug-event evt (equal (plist-get evt :type) 'threadStart))
 
     (:debug-event evt (equal (plist-get evt :type) 'breakpoint)
-     (ensime-test-with-proj
-      (proj src-files)
+		  (ensime-test-with-proj
+		   (proj src-files)
       (let* ((thread-id (plist-get evt :thread-id))
 	     (trace (ensime-rpc-debug-backtrace thread-id 0 -1))
              (pc-file (file-truename (car src-files))))
@@ -2085,7 +2085,7 @@
 		   :pc-location (:file ,pc-file :line 7)
 		   :this-object-id "NA"))))
       (ensime-rpc-debug-stop)
-      (ensime-test-cleanup proj))))
+(ensime-test-cleanup proj))))
 
 (ensime-async-test
  "REPL without server."
