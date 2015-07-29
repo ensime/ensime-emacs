@@ -99,59 +99,71 @@
 	     (-take 2 (version-to-list ensime--test-scala-version))
 	     "."))
 
-(defun ensime-create-tmp-project (src-files &optional extra-config)
+(defun ensime-create-tmp-project
+    (src-files &optional extra-config extra-subproject-dirs extra-subproject-config)
   "Create a temporary project directory. Populate with config, source files.
  Return a plist describing the project. Note: Delete such projects with
  ensime-cleanup-tmp-project."
   (let* ((root-dir (make-temp-file "ensime_test_proj_" t))
          (cache-dir (expand-file-name "cache" root-dir))
          (src-dir (expand-file-name "src/main/scala" root-dir))
+         (unit-test-dir (expand-file-name "src/test/scala" root-dir))
+         (int-test-dir (expand-file-name "src/it/scala" root-dir))a
          (target-dir (expand-file-name
 		      (concat "target/scala-"
 			      (ensime--test-scala-major-version) "/classes" )
                       root-dir))
          (test-target-dir (expand-file-name "test-target" root-dir))
          (scala-jar (ensime--extract-scala-library-jar))
+	 (root-subproject `((:name "root"
+				   :module-name "root"
+				   :source-roots (,src-dir ,unit-test-dir ,int-test-dir)
+				   :depends-on-modules nil
+				   :compile-deps (,scala-jar)
+				   :target ,target-dir
+				   :test-target ,test-target-dir)))
+	 (subprojects (append root-subproject extra-subproject-config))
          (config (append
                   extra-config
                   `(:root-dir ,root-dir
-                    :cache-dir ,cache-dir
-                    :name "test"
-                    :scala-version ,ensime--test-scala-version
-                    :java-home ,(getenv "JDK_HOME")
-                    :java-flags ("-Xmx1g" "-Xss2m" "-XX:MaxPermSize=128m")
-                    :subprojects
-                      ((:name "test"
-                        :module-name "test"
-                        :source-roots (,src-dir)
-                        :depends-on-modules nil
-                        :compile-deps (,scala-jar)
-                        :target ,target-dir
-                        :test-target ,test-target-dir)))))
-         (conf-file (ensime-create-file
-                     (expand-file-name ".ensime" root-dir)
-                     (format "%S" config))))
+			      :cache-dir ,cache-dir
+			      :name "test"
+			      :scala-version ,ensime--test-scala-version
+			      :java-home ,(getenv "JDK_HOME")
+			      :java-flags ("-Xmx1g" "-Xss2m" "-XX:MaxPermSize=128m")
+			      :subprojects ,subprojects)))
+	 (conf-file (ensime-create-file
+		     (expand-file-name ".ensime" root-dir)
+		     (format "%S" config))))
 
     (mkdir src-dir t)
+    (mkdir unit-test-dir t)
     (mkdir cache-dir t)
     (mkdir target-dir t)
     (mkdir test-target-dir t)
+    (mapcar (lambda (d) (-> (expand-file-name d root-dir) (mkdir t))) extra-subproject-dirs)
 
     (when ensime--test-cached-project
       (message "Copying %s to %s"
-               (plist-get ensime--test-cached-project :cache-dir)
-               cache-dir)
+	       (plist-get ensime--test-cached-project :cache-dir)
+	       cache-dir)
       (copy-directory (plist-get ensime--test-cached-project :cache-dir)
-                      cache-dir nil t t)
+		      cache-dir nil t t)
       (when (file-exists-p (expand-file-name "port" cache-dir))
-        (delete-file (expand-file-name "port" cache-dir))))
+	(delete-file (expand-file-name "port" cache-dir))))
 
     (let* ((src-file-names
-            (mapcar
-             (lambda (f) (ensime-create-file
-                          (expand-file-name (plist-get f :name) src-dir)
-                          (plist-get f :contents)))
-             src-files)))
+	    (mapcar
+	     (lambda (f)
+	       (let* ((name (plist-get f :name))
+		      (contents (plist-get f :contents))
+		      (relative (plist-get f :relative-to))
+		      (relative-dir (if relative
+					(expand-file-name relative root-dir)
+				      src-dir))
+		      (file-name (expand-file-name name relative-dir)))
+		 (ensime-create-file file-name contents)))
+	     src-files)))
       (list
        :src-files src-file-names
        :root-dir root-dir
@@ -1499,13 +1511,13 @@
      (funcall (key-binding (kbd "c"))))
 
     (:refactor-done touched-files t
-     (ensime-test-with-proj
-      (proj src-files)
-      (ensime-assert
-       (equal (length touched-files) 1))
-      (goto-char (point-min))
-      (ensime-assert (null (search-forward "import scala.collection.immutable.Vector" nil t)))
-      (ensime-test-cleanup proj))))
+		    (ensime-test-with-proj
+		     (proj src-files)
+		     (ensime-assert
+		      (equal (length touched-files) 1))
+		     (goto-char (point-min))
+		     (ensime-assert (null (search-forward "import scala.collection.immutable.Vector" nil t)))
+		     (ensime-test-cleanup proj))))
 
    (ensime-async-test
     "Test rename refactoring over multiple files."
@@ -1974,7 +1986,7 @@
         (goto-char (ensime-test-before-label "15"))
         (funcall check-sym-is 'deprecated))
 
-       (ensime-test-cleanup proj))))
+      (ensime-test-cleanup proj))))
 
    (ensime-async-test
     "Test implicit notes."
@@ -2075,24 +2087,129 @@
       (ensime-rpc-debug-stop)
       (ensime-test-cleanup proj))))
 
-   (ensime-async-test
-    "REPL without server."
-    (progn
-      (ensime-test-init-proj
-       (ensime-create-tmp-project '((:name "test.scala" :contents "")))
-       t)
-      (let* ((ensime-prefer-noninteractive t)
-             (proc (ensime-inf-run-scala)))
-        (ensime-test-var-put :repl-proc proc)))
-    ((:inf-repl-ready)
-     (ensime-inf-quit-interpreter))
-    ((:inf-repl-exit)
-     (let ((proc (ensime-test-var-get :repl-proc)))
-       (ensime-assert-equal (process-status proc) 'exit)
-       (ensime-assert-equal (process-exit-status proc) 0)
-       (ensime-test-with-proj (proj src-files) (ensime-cleanup-tmp-project proj)))))
-  ))
+(ensime-async-test
+ "REPL without server."
+ (progn
+   (ensime-test-init-proj
+    (ensime-create-tmp-project '((:name "test.scala" :contents "")))
+    t)
+   (let* ((ensime-prefer-noninteractive t)
+	  (proc (ensime-inf-run-scala)))
+     (ensime-test-var-put :repl-proc proc)))
+ ((:inf-repl-ready)
+  (ensime-inf-quit-interpreter))
+ ((:inf-repl-exit)
+  (let ((proc (ensime-test-var-get :repl-proc)))
+    (ensime-assert-equal (process-status proc) 'exit)
+    (ensime-assert-equal (process-exit-status proc) 0)
+    (ensime-test-with-proj (proj src-files) (ensime-cleanup-tmp-project proj)))))
 
+(ensime-async-test
+ "Ensime unit test dwim."
+ (let* ((proj (ensime-create-tmp-project
+	       `((:name
+		  "atest/ExampleSpec.scala"
+		  :relative-to "src/test/scala"
+		  :contents ,(ensime-test-concat-lines
+			      "package atest"
+			      "import collection.mutable.Stack"
+			      "import org.scalatest._"
+			      "class ExampleSpec extends FlatSpec with Matchers {"
+
+			      "  \"A Stack\" should \"pop values in last-in-first-out order\" in {"
+			      "    val stack = new Stack[Int]"
+			      "    stack.push(1)"
+			      "    stack.push(2)"
+			      "    stack.pop() should be (2)"
+			      "    stack.pop() should be (1)"
+			      "  }"
+
+			      "  it should \"throw NoSuchElementException if an empty stack is popped\" in {"
+			      "    val emptyStack = new Stack[Int]"
+			      "    a [NoSuchElementException] should be thrownBy {"
+			      "    emptyStack.pop()"
+			      "    }"
+			      "  }"
+			      "}"))
+		 (:name "build.sbt"
+			:relative-to ""
+			:contents ,(ensime-test-concat-lines
+				    (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+				    (concat
+				     "libraryDependencies += \"org.scalatest\" % \"scalatest_"
+				     (ensime--test-scala-major-version) "\" % \"2.2.4\" % \"test\""))))))
+	(src-files (plist-get proj :src-files)))
+   (assert ensime-sbt-command)
+   (ensime-test-init-proj proj))
+ ((:connected :compiler-ready :full-typecheck-finished :indexer-ready)
+  (ensime-test-with-proj
+   (proj src-files)
+   (dolist
+       (tests '(("test" ensime-sbt-do-test-dwim)
+		("testQuick" ensime-sbt-do-test-quick-dwim)
+		("test-only atest.ExampleSpec" ensime-sbt-do-test-only-dwim)))
+     (let ((command (car tests))
+	   (f (cdr tests)))
+       (apply f)
+       (ensime-assert-equal (sbt:get-previous-command) command)))
+   (ensime-test-cleanup proj))))
+
+(ensime-async-test
+ "Ensime integration test dwim."
+ (let* ((proj (ensime-create-tmp-project
+	       `((:name
+		  "atest/ExampleSpec.scala"
+		  :relative-to "src/it/scala"
+		  :contents ,(ensime-test-concat-lines
+			      "package atest"
+			      "import collection.mutable.Stack"
+			      "import org.scalatest._"
+			      "class ExampleSpec extends FlatSpec with Matchers {"
+
+			      "  \"A Stack\" should \"pop values in last-in-first-out order\" in {"
+			      "    val stack = new Stack[Int]"
+			      "    stack.push(1)"
+			      "    stack.push(2)"
+			      "    stack.pop() should be (2)"
+			      "    stack.pop() should be (1)"
+			      "  }"
+
+			      "  it should \"throw NoSuchElementException if an empty stack is popped\" in {"
+			      "    val emptyStack = new Stack[Int]"
+			      "    a [NoSuchElementException] should be thrownBy {"
+			      "    emptyStack.pop()"
+			      "    }"
+			      "  }"
+			      "}"))
+		 (:name "build.sbt"
+			:relative-to ""
+			:contents ,(ensime-test-concat-lines
+				    (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+				    "lazy val root ="
+				    "  Project(\"root\", file(\".\"))"
+				    "  .configs( IntegrationTest )"
+				    "  .settings( Defaults.itSettings : _*)"
+				    "  .settings( libraryDependencies += specs )"
+				    (concat
+				     "lazy val specs = \"org.scalatest\" % \"scalatest_"
+				     (ensime--test-scala-major-version) "\" % \"2.2.4\" % \"it\""))))
+	       nil
+	       '("src/it/scala")))
+	(src-files (plist-get proj :src-files)))
+   (assert ensime-sbt-command)
+   (ensime-test-init-proj proj))
+ ((:connected :compiler-ready :full-typecheck-finished :indexer-ready)
+  (ensime-test-with-proj
+   (proj src-files)
+   (dolist
+       (tests '(("it:test" ensime-sbt-do-test-dwim)
+		("it:testQuick" ensime-sbt-do-test-quick-dwim)
+		("it:test-only atest.ExampleSpec" ensime-sbt-do-test-only-dwim)))
+     (let ((command (car tests))
+	   (f (cdr tests)))
+       (apply f)
+       (ensime-assert-equal (sbt:get-previous-command) command)))
+   (ensime-test-cleanup proj))))))
 
 (defun ensime-run-all-tests ()
   "Run all regression tests for ensime-mode."
