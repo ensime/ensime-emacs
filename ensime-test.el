@@ -100,7 +100,7 @@
 	     "."))
 
 (defun ensime-create-tmp-project
-    (src-files &optional extra-config extra-subproject-dirs extra-subproject-config)
+    (src-files &optional extra-config subproject-name extra-subproject-dirs)
   "Create a temporary project directory. Populate with config, source files.
  Return a plist describing the project. Note: Delete such projects with
  ensime-cleanup-tmp-project."
@@ -115,14 +115,9 @@
                       root-dir))
          (test-target-dir (expand-file-name "test-target" root-dir))
          (scala-jar (ensime--extract-scala-library-jar))
-	 (root-subproject `((:name ,(downcase (file-name-nondirectory root-dir))
-				   :module-name ,(downcase (file-name-nondirectory root-dir))
-				   :source-roots (,src-dir ,unit-test-dir ,int-test-dir)
-				   :depends-on-modules nil
-				   :compile-deps (,scala-jar)
-				   :target ,target-dir
-				   :test-target ,test-target-dir)))
-	 (subprojects (append root-subproject extra-subproject-config))
+	 (sp-name (if subproject-name
+		      subproject-name
+		    (downcase (file-name-nondirectory root-dir))))
          (config (append
                   extra-config
                   `(:root-dir ,root-dir
@@ -131,10 +126,16 @@
 			      :scala-version ,ensime--test-scala-version
 			      :java-home ,(getenv "JDK_HOME")
 			      :java-flags ("-Xmx1g" "-Xss2m" "-XX:MaxPermSize=128m")
-			      :subprojects ,subprojects)))
-	 (conf-file (ensime-create-file
-		     (expand-file-name ".ensime" root-dir)
-		     (format "%S" config))))
+			      :subprojects ((:name ,sp-name
+						   :module-name ,sp-name
+						   :source-roots (,src-dir ,unit-test-dir ,int-test-dir)
+						   :depends-on-modules nil
+						   :compile-deps (,scala-jar)
+						   :target ,target-dir
+						   :test-target ,test-target-dir)))))
+         (conf-file (ensime-create-file
+                     (expand-file-name ".ensime" root-dir)
+                     (format "%S" config))))
 
     (mkdir src-dir t)
     (mkdir unit-test-dir t)
