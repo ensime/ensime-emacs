@@ -43,7 +43,6 @@
   (require 'ensime-macros))
 
 (require 'sbt-mode)
-(require 'hydra)
 
 (defgroup ensime-sbt nil
   "Support for sbt build REPL."

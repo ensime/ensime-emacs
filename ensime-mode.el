@@ -66,7 +66,6 @@
       (define-key prefix-map (kbd "C-b r") 'ensime-sbt-do-run)
       (define-key prefix-map (kbd "C-b t") 'ensime-sbt-do-test-dwim)
       (define-key prefix-map (kbd "C-b q") 'ensime-sbt-do-test-quick-dwim)
-      (define-key prefix-map (kbd "C-b T") 'hydra-ensime-sbt-test/body)
 
       (define-key prefix-map (kbd "C-d u") 'ensime-db-clear-break)
       (define-key prefix-map (kbd "C-d s") 'ensime-db-step)
