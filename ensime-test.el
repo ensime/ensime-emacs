@@ -108,7 +108,7 @@
          (cache-dir (expand-file-name "cache" root-dir))
          (src-dir (expand-file-name "src/main/scala" root-dir))
          (unit-test-dir (expand-file-name "src/test/scala" root-dir))
-         (int-test-dir (expand-file-name "src/it/scala" root-dir))a
+         (int-test-dir (expand-file-name "src/it/scala" root-dir))
          (target-dir (expand-file-name
 		      (concat "target/scala-"
 			      (ensime--test-scala-major-version) "/classes" )
@@ -171,7 +171,8 @@
        :cache-dir cache-dir
        :conf-file conf-file
        :src-dir src-dir
-       :target target-dir))))
+       :target target-dir
+       :config config))))
 
 (defvar ensime-tmp-project-hello-world
   `((:name
@@ -2149,8 +2150,12 @@
        (tests '(("test" ensime-sbt-do-test-dwim)
 		("testQuick" ensime-sbt-do-test-quick-dwim)
 		("test-only atest.ExampleSpec" ensime-sbt-do-test-only-dwim)))
-     (let ((command (car tests))
-	   (f (cdr tests)))
+     (let* ((module (-> (plist-get proj :config)
+			(plist-get :subprojects)
+			-first-item
+			(plist-get :name)))
+	    (command (s-concat module "/" (car tests)))
+	    (f (cdr tests)))
        (apply f)
        (ensime-assert-equal (sbt:get-previous-command) command)))
    (ensime-test-cleanup proj))))
@@ -2194,8 +2199,7 @@
 				    (concat
 				     "lazy val specs = \"org.scalatest\" % \"scalatest_"
 				     (ensime--test-scala-major-version) "\" % \"2.2.4\" % \"it\""))))
-	       nil
-	       '("src/it/scala")))
+	       nil "root" '("src/it/scala")))
 	(src-files (plist-get proj :src-files)))
    (assert ensime-sbt-command)
    (ensime-test-init-proj proj))
@@ -2206,8 +2210,12 @@
        (tests '(("it:test" ensime-sbt-do-test-dwim)
 		("it:testQuick" ensime-sbt-do-test-quick-dwim)
 		("it:test-only atest.ExampleSpec" ensime-sbt-do-test-only-dwim)))
-     (let ((command (car tests))
-	   (f (cdr tests)))
+     (let* ((module (-> (plist-get proj :config)
+			(plist-get :subprojects)
+			-first-item
+			(plist-get :name)))
+	    (command (s-concat module "/" (car tests)))
+	    (f (cdr tests)))
        (apply f)
        (ensime-assert-equal (sbt:get-previous-command) command)))
    (ensime-test-cleanup proj))))))
