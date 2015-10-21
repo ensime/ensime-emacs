@@ -42,6 +42,7 @@
 (require 'ensime-stacktrace)
 (require 'ensime-debug)
 (require 'ensime-editor)
+(require 'ensime-expand-region)
 (require 'ensime-goto-testfile)
 (require 'ensime-inspector)
 (require 'ensime-mode)
