@@ -69,7 +69,7 @@
 (defvar ensime-protocol-version "0.7")
 
 (defvar ensime-prefer-noninteractive nil
-  "State variable used for regression testing.")
+  "State variable used for regression testing, and for skipping prompt in conjunction with sbt.")
 
 (defvar ensime-popup-in-other-frame nil)
 
@@ -83,8 +83,8 @@
       (if ensime-auto-generate-config
           (ensime--maybe-refresh-config
            nil
-           'ensime--maybe-update-and-start
-           '(lambda (reason) (ensime--maybe-update-and-start)))
+           'ensime--maybe-update-and-start-noninteractive
+           '(lambda (reason) (ensime--maybe-update-and-start-noninteractive)))
         (ensime--maybe-update-and-start))
     ('error (error (format
                     "check that sbt is on your PATH and that your config is compatible with %s [%s]"

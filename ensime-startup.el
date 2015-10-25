@@ -96,6 +96,10 @@ saveClasspathTask := {
           (ensime--update-server scala-version `(lambda () (ensime--1 ,config-file)))
         (ensime--1 config-file)))))
 
+(defun ensime--maybe-update-and-start-noninteractive ()
+  (let ((ensime-prefer-noninteractive t))
+    (ensime--maybe-update-and-start)))
+
 (defun* ensime--1 (config-file)
   (when (and (ensime-source-file-p) (not ensime-mode))
     (ensime-mode 1))
