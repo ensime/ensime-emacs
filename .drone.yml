@@ -4,7 +4,8 @@ build:
   environment:
     - SCALA_VERSION=2.11.7
   commands:
-    - cask pkg-file ;
+    - git log --pretty=format:'%h : %an : %s' --graph | head ;
+      cask pkg-file ;
       cask install ;
       cask build ;
       test/run_emacs_tests.sh ;
@@ -15,4 +16,3 @@ build:
 matrix:
   EMACS:
     - /opt/emacs-24.5/bin/emacs
-    - /opt/emacs-24.3/bin/emacs
