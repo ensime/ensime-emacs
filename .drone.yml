@@ -16,4 +16,3 @@ build:
 matrix:
   EMACS:
     - /opt/emacs-24.5/bin/emacs
-    - /opt/emacs-24.3/bin/emacs
