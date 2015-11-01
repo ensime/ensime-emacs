@@ -1,8 +1,5 @@
 (setq debug-on-error t
       debug-on-quit t
-      ensime-log-events t
-      ensime--debug-messages noninteractive
-      ensime-typecheck-when-idle nil
       user-emacs-directory (expand-file-name
                             (concat ".cask/" emacs-version)))
 
@@ -22,9 +19,14 @@
               (:exclude "ensime-test.el" "dotemacs_test.el" "ensime-inspector.el")))
 
 (add-to-list 'load-path default-directory)
+
 (require 'ensime)
 (require 'ensime-test)
-(setq ensime-server-logback (concat ensime-test-dev-home "/test/logback.xml"))
+(setq ensime-server-logback (concat ensime-test-dev-home "/test/logback.xml")
+      ensime-log-events t
+      ensime--debug-messages noninteractive
+      ensime-typecheck-when-idle nil
+      ensime-auto-connect 'always)
 
 (message "Using ensime-test-dev-home of %s" ensime-test-dev-home)
 (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
