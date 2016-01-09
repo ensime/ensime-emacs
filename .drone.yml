@@ -1,5 +1,6 @@
 build:
   image: ensime/ensime:latest
+  debug: true
   pull: true
   environment:
     - SCALA_VERSION=2.11.7
