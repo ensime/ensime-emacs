@@ -84,7 +84,7 @@
         (if ensime-auto-generate-config
             (ensime--maybe-refresh-config
              nil
-             '(ensime--maybe-update-and-start-noninteractive orig-buffer-file-name)
+             '(lambda () (ensime--maybe-update-and-start-noninteractive orig-buffer-file-name))
              '(lambda (reason) (ensime--maybe-update-and-start-noninteractive orig-buffer-file-name)))
           (ensime--maybe-update-and-start orig-buffer-file-name))
       ('error (error (format
