@@ -123,7 +123,6 @@
   (set (make-local-variable 'company-backends) '(ensime-company))
   (company-mode)
   (yas-minor-mode-on)
-  (set (make-local-variable 'company-idle-delay) 0)
   (set (make-local-variable 'company-minimum-prefix-length) 2)
   (local-set-key [tab] 'ensime-company-complete-or-indent))
 
