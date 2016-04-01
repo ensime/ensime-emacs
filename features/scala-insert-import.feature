@@ -49,6 +49,41 @@ Feature: Insert Scala Import
     }
     """
 
+  Scenario: Insert Import after existing multiline import
+    When I open temp scala file "test"
+    And I insert:
+    """
+    package com.example
+
+    import com.example.{ Test1, Test2,
+      Test3,
+      Test4
+    }
+
+    class C {
+      def f = 1
+    }
+    """
+
+    And I go to line "9"
+    And I go to end of line
+    And I insert import "scala.collection.immutable.Seq"
+
+    Then I should see:
+    """
+    package com.example
+
+    import com.example.{ Test1, Test2,
+      Test3,
+      Test4
+    }
+    import scala.collection.immutable.Seq
+
+    class C {
+      def f = 1
+    }
+    """
+
   Scenario: Insert Import With Import Statement
     When I open temp scala file "test"
     And I insert:

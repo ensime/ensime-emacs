@@ -583,6 +583,19 @@ Returns a function/closure to invoke the necessary buffer operations to perform 
            insert save-excursion)
       (ensime-indent-line))))
 
+(defun ensime-move-to-end-of-multiline-import ()
+  "Move point to the end of a multiline import."
+  (when (not (string-match (rx (zero-or-more any) ?} (zero-or-more whitespace) eol) (thing-at-point 'line)))
+      (goto-char (point-at-eol))
+      (when (not (equal (point) (point-max)))
+        (forward-line 1)
+        (ensime-move-to-end-of-multiline-import)
+      )))
+
+(defun ensime-at-start-of-multiline-block ()
+  "Returns t when at start of multiline block."
+      (string-match (rx (zero-or-more anything) ?{ (zero-or-more (not (any ?})))) (thing-at-point 'line)))
+
 (defun ensime-java-new-import-insertion-decisioning-in-import-block (insertion-range starting-point qualified-name)
   "Search through import statements in buffer above INSERTION-RANGE and STARTING-POINT.
 Decide what line to insert QUALIFIED-NAME."
@@ -607,7 +620,9 @@ Decide what line to insert QUALIFIED-NAME."
         (matching-import (match-string 1)))
     (cond
      ;; insert at the end of the import block
-     ((not looking-at-import?) (ensime-insert-new-import-next-line starting-point 'ensime-scala-new-import qualified-name))
+     ((not looking-at-import?)
+      (when (ensime-at-start-of-multiline-block) (ensime-move-to-end-of-multiline-import))
+      (ensime-insert-new-import-next-line starting-point 'ensime-scala-new-import qualified-name))
      ;; same base package, insert on next line, overriding the entire line
      ((ensime-same-base-package-p matching-import qualified-name)
       (ensime-insert-new-scala-import-grouped-package-next-line matching-import qualified-name))
