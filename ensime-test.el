@@ -1771,15 +1771,20 @@
          (proj src-files)
          (ensime-rpc-debug-set-break buffer-file-name 7)
          ;; we could also use the ensime-sbt debugging launcher here
-         (start-process
-          "debugging"
-          "*debugging*"
-          "java"
-          "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
-          "-classpath" (car (plist-get proj :targets))
-          "test.Test")
-         (sleep-for 10) ;; yeah yeah, I know...
-         (ensime-db-attach "127.0.0.1" "5005")))
+         (let ((debugging (start-process
+                           "debugging"
+                           "*debugging*"
+                           "java"
+                           "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
+                           "-classpath" (concat (ensime--extract-scala-library-jar)
+                                                ensime--classpath-separator
+                                                (car (plist-get proj :targets)))
+                           "test.Test"))
+               (attach (lambda (p text)
+                         (when (s-contains? "Listening for transport dt_socket at address: 5005" text)
+                           (set-process-filter p nil)
+                           (ensime-db-attach "127.0.0.1" "5005")))))
+           (set-process-filter debugging attach))))
 
        ;; this doesn't always arrive
        ;;(:debug-event evt (equal (plist-get evt :type) 'threadStart))
