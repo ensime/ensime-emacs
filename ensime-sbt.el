@@ -51,7 +51,7 @@
 
 (defun ensime-sbt-do-compile ()
   (interactive)
-  (sbt-command "compile"))
+  (sbt-command "test:compile"))
 
 (defun ensime-sbt-do-run ()
   (interactive)
