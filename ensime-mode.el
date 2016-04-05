@@ -266,7 +266,9 @@
           (define-key ensime-mode-map [mouse-movement] 'ensime-mouse-motion))
 
         (ensime-refresh-all-note-overlays)
-        (ensime--setup-imenu))
+
+	(when (equal major-mode 'scala-mode)
+	  (ensime--setup-imenu)))
     (progn
       (pcase ensime-completion-style
         (`auto-complete
@@ -295,7 +297,9 @@
       (remove-hook 'tooltip-functions 'ensime-tooltip-handler)
       (make-local-variable 'track-mouse)
       (setq track-mouse nil)
-      (ensime--unset-imenu))))
+
+      (when (equal major-mode 'scala-mode)
+	(ensime--unset-imenu)))))
 
 ;;;;;; Mouse handlers
 
