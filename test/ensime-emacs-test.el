@@ -234,3 +234,12 @@
                                              '("/x/y/scala-compiler-2.11.5.jar" "/x/y/scala-reflect-2.11.5.jar"
                                                "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"))))))
      (delete-file (ensime--classpath-file "test-inf-repl-config"))))) 
+
+(ert-deftest support-scala-versions ()
+  (should (equal (ensime--scala-binary-version "2.10.6")
+                 "2.10"))
+  (should (equal (ensime--scala-binary-version "2.11.8")
+                 "2.11"))
+  (should (equal (ensime--scala-binary-version "2.11.8-tl-201604131941")
+                 "2.11"))
+  )
