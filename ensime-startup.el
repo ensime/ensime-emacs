@@ -308,7 +308,7 @@ CACHE-DIR is the server's persistent output directory."
 
 (defun ensime--scala-binary-version (full-version)
   "The scala binary version given a full version string."
-  (pcase (version-to-list full-version)
+  (pcase (version-to-list (car (s-split "-" full-version)))
     (`(2 10 ,_) "2.10")
     (`(2 11 ,_) "2.11")
     (t (error "unsupported scala version %s" full-version))))
