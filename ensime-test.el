@@ -83,11 +83,6 @@
 (defvar ensime--test-scala-version
   (or (getenv "SCALA_VERSION") "2.11.4"))
 
-(defun ensime--test-scala-major-version ()
-  (mapconcat 'int-to-string
-	     (-take 2 (version-to-list ensime--test-scala-version))
-	     "."))
-
 (defun ensime-create-tmp-project
     (src-files &optional extra-config subproject-name extra-subproject-dirs)
   "Create a temporary project directory. Populate with config, source files.
@@ -100,7 +95,8 @@
          (int-test-dir (expand-file-name "src/it/scala" root-dir))
          (target-dir (expand-file-name
 		      (concat "target/scala-"
-			      (ensime--test-scala-major-version) "/classes" )
+                      (ensime--scala-binary-version ensime--test-scala-version)
+                      "/classes")
                       root-dir))
          (test-target-dir (expand-file-name "test-target" root-dir))
          (scala-jar (ensime--extract-scala-library-jar))
@@ -1757,6 +1753,7 @@
            "scalacOptions += \"-g:notailcalls\""
            ""
            (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+           (concat "scalaBinaryVersion := \"" (ensime--scala-binary-version ensime--test-scala-version) "\"")
            ))
          (assert ensime-sbt-command)
          (let ((default-directory (file-name-as-directory (plist-get proj :root-dir))))
@@ -1865,10 +1862,12 @@
 			   :relative-to ""
 			   :contents ,(ensime-test-concat-lines
 				       (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+                       (concat "scalaBinaryVersion := \"" (ensime--scala-binary-version ensime--test-scala-version) "\"")
 				       ""
 				       (concat
-					"libraryDependencies += \"org.scalatest\" % \"scalatest_"
-					(ensime--test-scala-major-version) "\" % \"2.2.4\" % \"test\""))))))
+                        "libraryDependencies += \"org.scalatest\" % \"scalatest_"
+                        (ensime--scala-binary-version ensime--test-scala-version)
+                        "\" % \"2.2.4\" % \"test\""))))))
 	   (src-files (plist-get proj :src-files)))
       (assert ensime-sbt-command)
       (ensime-test-init-proj proj))
@@ -1921,7 +1920,8 @@
 		    (:name "build.sbt"
 			   :relative-to ""
 			   :contents ,(ensime-test-concat-lines
-				       (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+                           (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+                           (concat "scalaBinaryVersion := \"" (ensime--scala-binary-version ensime--test-scala-version) "\"")
 				       ""
 				       "lazy val root ="
 				       "  Project(\"root\", file(\".\"))"
@@ -1931,7 +1931,8 @@
 				       ""
 				       (concat
 					"lazy val specs = \"org.scalatest\" % \"scalatest_"
-					(ensime--test-scala-major-version) "\" % \"2.2.4\" % \"it\""))))
+                    (ensime--scala-binary-version ensime--test-scala-version)
+                    "\" % \"2.2.4\" % \"it\""))))
 		  nil "root" '("src/it/scala")))
 	   (src-files (plist-get proj :src-files)))
       (assert ensime-sbt-command)
