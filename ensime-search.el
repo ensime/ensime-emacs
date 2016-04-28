@@ -79,7 +79,7 @@
     (define-key map (kbd "<down>") 'ensime-search-next-match)
     (define-key map "\C-n" 'ensime-search-next-match)
     (define-key map "\C-i" 'ensime-search-insert-import-of-current-result)
-    (define-key map [(return)] 'ensime-search-choose-current-result)
+    (define-key map (kbd "RET") 'ensime-search-choose-current-result)
     map)
   "Keymap used by ensime-search.")
 
@@ -91,7 +91,7 @@
     (define-key map "\C-n" 'ensime-search-next-match)
     (define-key map (kbd "<down>") 'ensime-search-next-match)
     (define-key map "\C-i" 'ensime-search-insert-import-of-current-result)
-    (define-key map [(return)] 'ensime-search-choose-current-result)
+    (define-key map (kbd "RET") 'ensime-search-choose-current-result)
     map)
   "Keymap used by ensime-search.")
 
@@ -285,7 +285,7 @@
 	(goto-char target-point)
 	(setq ensime-search-selection-overlay
 	      (ensime-make-overlay target-point (point-at-eol)
-				   nil 'ensime-warnline-highlight))
+				   nil '(:face 'ensime-warnline-highlight)))
 	(set-window-point (ensime-window-showing-buffer
 			   ensime-search-target-buffer)
 			  target-point)
