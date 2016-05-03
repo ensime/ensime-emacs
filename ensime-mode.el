@@ -255,6 +255,9 @@
         (add-hook 'after-change-functions
                   'ensime-after-change-function nil t)
 
+        (add-hook 'window-configuration-change-hook
+                  'ensime-show-left-margin-hook)
+
         (ensime-idle-typecheck-set-timer)
 
         (when ensime-tooltip-hints
@@ -288,11 +291,14 @@
       (remove-hook 'ensime-source-buffer-loaded-hook
                    'ensime-sem-high-refresh-hook)
 
-     (remove-hook 'ensime-source-buffer-loaded-hook
+      (remove-hook 'ensime-source-buffer-loaded-hook
                    'ensime-typecheck-current-buffer)
 
       (remove-hook 'after-change-functions
                    'ensime-after-change-function t)
+
+      (remove-hook 'window-configuration-change-hook
+                   'ensime-show-left-margin-hook)
 
       (remove-hook 'tooltip-functions 'ensime-tooltip-handler)
       (make-local-variable 'track-mouse)

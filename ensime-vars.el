@@ -237,6 +237,14 @@ and parameters."
   :type 'boolean
   :group 'ensime-ui)
 
+(defcustom ensime-left-margin-gutter t
+  "If non-nil, Ensime will show the compilation and warning icons
+in the left margin, when in terminal mode. These icons can
+interfere with other modes that use the left-margin. (git-gutter,
+linum, etc..)"
+  :type 'boolean
+  :group 'ensime-ui)
+
 (defcustom ensime-refactor-preview nil
   "Enable or disable a refactor preview feature.
 Non-nil means Ensime will show a preview of the changes in the

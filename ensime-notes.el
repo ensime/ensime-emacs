@@ -161,14 +161,41 @@ any buffer visiting the given file."
     (overlay-put ov 'ensime-overlay  t)
     (overlay-put ov 'priority 100)
     (let ((char (plist-get visuals :char)))
-      (when char
-        (overlay-put ov 'before-string
-                     (propertize char
-                      'display
-                      (list 'left-fringe
-                            (plist-get visuals :bitmap)
-                            (plist-get visuals :fringe))))))
+      (if (window-system)
+          (when char
+            (overlay-put ov 'before-string
+                         (propertize char
+                                     'display
+                                     (list 'left-fringe
+                                           (plist-get visuals :bitmap)
+                                           (plist-get visuals :fringe)))))
+        (when (and char ensime-left-margin-gutter)
+          (ensime-show-sign-overlay char (plist-get visuals :fringe) ov))))
     ov))
+
+(defun ensime-show-sign-overlay (sign face ov)
+  (save-excursion
+    (overlay-put ov 'before-string (ensime-before-string sign face))))
+
+(defun ensime-before-string (sign face)
+  (propertize " " 'display `((margin left-margin)
+                             ,(propertize sign 'face
+                                          (face-remap-add-relative face
+                                                                   :underline nil
+                                                                   :weight 'normal
+                                                                   :slant 'normal)))))
+
+(defun ensime-set-left-window-margin (width)
+  (let ((curwin (get-buffer-window)))
+    (set-window-margins curwin width (cdr (window-margins curwin)))))
+
+(defun ensime-show-left-margin-hook ()
+  "Shows the left margin. This function is called by
+ window-configuration-change-hook."
+  (when (and
+         (not window-system)
+         ensime-left-margin-gutter)
+    (ensime-set-left-window-margin 1)))
 
 (defun ensime-overlays-at (point)
   "Return list of overlays of type 'ensime-overlay at point."
