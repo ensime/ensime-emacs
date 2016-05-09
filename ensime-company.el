@@ -125,7 +125,7 @@
   (yas-minor-mode-on)
   (set (make-local-variable 'company-idle-delay) 0)
   (set (make-local-variable 'company-minimum-prefix-length) 2)
-  (local-set-key [tab] 'ensime-company-complete-or-indent))
+  (local-set-key (kbd "TAB") 'ensime-company-complete-or-indent))
 
 (defun ensime--yasnippet-complete-action (&optional candidate-in force-block)
   "If the candidate is a callable symbol, expand a yasnippet template for the
