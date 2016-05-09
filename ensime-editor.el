@@ -694,7 +694,7 @@ Decide what line to insert QUALIFIED-NAME."
 	 (name-start (plist-get sym :start))
 	 (name-end (plist-get sym :end))
 	 (suggestions (when name (ensime-rpc-import-suggestions-at-point (list name) 10))))
-    (when suggestions
+    (when (car-safe suggestions)
       (let* ((names (mapcar
 		     (lambda (s)
 		       (propertize (plist-get s :name)
