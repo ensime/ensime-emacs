@@ -1,4 +1,4 @@
-(setq debug-on-error nil
+(setq debug-on-error t
       debug-on-quit t
       ensime-log-events nil ;; change to `t' for debug info
       ensime--debug-messages nil ;; change to `t' for debug info

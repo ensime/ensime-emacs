@@ -109,10 +109,7 @@
 			      :cache-dir ,cache-dir
 			      :name "test"
 			      :scala-version ,ensime--test-scala-version
-			      :java-home ,(or (getenv "JDK_HOME")
-					      (when (eq system-type 'darwin)
-						(s-trim (shell-command-to-string
-							 "/usr/libexec/java_home"))))
+			      :java-home ,(getenv "JDK_HOME")
 			      :java-flags ("-Xmx1g" "-Xss2m" "-XX:MaxPermSize=128m")
 			      :subprojects ((:name ,sp-name
 						   :module-name ,sp-name
@@ -279,7 +276,9 @@
                     (funcall handler-func value)
                   (ensime-test-interrupted
                    (message
-                    "Error executing test: %s, moving to next." signal)
+                    "Error executing test: %s" signal)
+                   (when ensime--test-exit-on-finish
+                     (kill-emacs 1))
                    (setq is-last t))))
               (when is-last
                 (setq ensime-async-handler-stack nil)
@@ -532,6 +531,13 @@
 (defvar ensime--test-cached-project
   "When set, indicates a project that can be reused to setup tests"
   nil)
+
+;; WORKAROUND https://github.com/capitaomorte/yasnippet/issues/697
+(defun yas-mock-insert (string)
+  (require 'ert-x)
+  (dotimes (i (length string))
+    (let ((last-command-event (aref string i)))
+      (ert-simulate-command '(self-insert-command 1)))))
 
 (defvar ensime-slow-suite
 
@@ -844,9 +850,9 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "add" candidates))
-	(insert "d")
+	(yas-mock-insert "d")
 	(ensime--yasnippet-complete-action (car (member "add" candidates)))
-	(insert "2") (yas-next-field) (insert "3") (yas-next-field)
+	(yas-mock-insert "2") (yas-next-field) (yas-mock-insert "3") (yas-next-field)
 	(ensime-assert-equal
 	 (buffer-substring-no-properties pt (point)) "d(2, 3)"))
       (ensime-save-and-typecheck-current-buffer)))
@@ -859,9 +865,9 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "+" candidates))
-	(insert "+")
+	(yas-mock-insert "+")
 	(ensime--yasnippet-complete-action (car (member "+" candidates)))
-	(insert "5") (yas-next-field)
+	(yas-mock-insert "5") (yas-next-field)
 	(ensime-assert-equal
 	 (buffer-substring-no-properties pt (point)) "+ 5"))
       (ensime-save-and-typecheck-current-buffer)))
@@ -874,9 +880,9 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "+" candidates))
-	(insert "+")
+	(yas-mock-insert "+")
 	(ensime--yasnippet-complete-action (car (member "+" candidates)))
-	(insert "8") (yas-next-field)
+	(yas-mock-insert "8") (yas-next-field)
 	(ensime-assert-equal
 	 (buffer-substring-no-properties (- pt 1) (point)) " + 8"))
       (ensime-save-and-typecheck-current-buffer)))
@@ -889,9 +895,9 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "doBlock" candidates))
-	(insert "ck")
+	(yas-mock-insert "ck")
 	(ensime--yasnippet-complete-action (car (member "doBlock" candidates)) ?\()
-	(insert "str") (yas-next-field)
+	(yas-mock-insert "str") (yas-next-field)
 	(ensime-assert-equal
 	 (buffer-substring-no-properties pt (point)) "ck(str)"))
       (ensime-save-and-typecheck-current-buffer)))
@@ -904,9 +910,9 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "doBlock" candidates))
-	(insert "ck")
+	(yas-mock-insert "ck")
 	(ensime--yasnippet-complete-action (car (member "doBlock" candidates)) ?\{)
-	(insert "i") (yas-next-field) (insert "str") (yas-next-field)
+	(yas-mock-insert "i") (yas-next-field) (yas-mock-insert "str") (yas-next-field)
 	(ensime-assert-equal
 	 (buffer-substring-no-properties pt (point)) "ck { i => str }"))
       (ensime-save-and-typecheck-current-buffer)))
@@ -919,11 +925,11 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "doByName" candidates))
-	(insert "me")
+	(yas-mock-insert "me")
 	(ensime--yasnippet-complete-action (car (member "doByName" candidates)) ?\{)
 	(ensime-assert-equal
 	 (buffer-substring-no-properties pt (point)) "me { ")
-	(insert "\"bla\""))
+	(yas-mock-insert "\"bla\""))
       (ensime-save-and-typecheck-current-buffer)))
 
     ((:full-typecheck-finished)
@@ -934,9 +940,9 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "field_=" candidates))
-	(insert "ld_=")
+	(yas-mock-insert "ld_=")
 	(ensime--yasnippet-complete-action (car (member "field_=" candidates)) ?\{)
-	(insert "2") (yas-next-field)
+	(yas-mock-insert "2") (yas-next-field)
 	(ensime-assert-equal
 	 (buffer-substring-no-properties pt (point)) "ld = 2"))
       (ensime-save-and-typecheck-current-buffer)))
@@ -949,7 +955,7 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "hashCode" candidates))
-	(insert "de")
+	(yas-mock-insert "de")
 	(ensime--yasnippet-complete-action (car (member "hashCode" candidates)))
 	(ensime-assert-equal
 	 (buffer-substring-no-properties pt (point)) "de()"))
@@ -963,7 +969,7 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "getBytes" candidates))
-	(insert "es")
+	(yas-mock-insert "es")
 	(ensime--yasnippet-complete-action (car (member "getBytes" candidates)))
 	(ensime-assert-equal
 	 (buffer-substring-no-properties pt (point)) "es"))
@@ -977,7 +983,7 @@
       (let* ((candidates (ensime--test-completions))
 	     (pt (point)))
         (ensime-assert (member "toLong" candidates))
-	(insert "ng")
+	(yas-mock-insert "ng")
 	(ensime--yasnippet-complete-action (car (member "toLong" candidates)))
 	(ensime-assert-equal
 	 (buffer-substring-no-properties pt (point)) "ng"))
@@ -1725,94 +1731,94 @@
       (ensime-test-cleanup proj)
       )))
 
-      (ensime-async-test
-       "Test debugging scala project."
-       ;; these test projects should really just be explicitly defined in the repo
-       (let* ((proj (ensime-create-tmp-project
-                     `((:name
-                        "test/Test.scala"
-                        :contents ,(ensime-test-concat-lines
-                                    "package test"
-                                    "object Test {"
-                                    "  def main(args: Array[String]) {"
-                                    "    val a = \"cat\""
-                                    "    val b = \"dog\""
-                                    "    val c = \"bird\""
-                                    "    println(a + b + c)"
-                                    "  }"
-                                    "}")))))
-              (target    (car (plist-get proj :targets)))
-              (src-files (plist-get proj :src-files)))
-         (ensime-create-file
-          (expand-file-name "build.sbt" (plist-get proj :root-dir))
-          (ensime-test-concat-lines
-           "import sbt._"
-           ""
-           "name := \"test\""
-           ""
-           "scalacOptions += \"-g:notailcalls\""
-           ""
-           (concat "scalaVersion := \"" ensime--test-scala-version "\"")
-           (concat "scalaBinaryVersion := \"" (ensime--scala-binary-version ensime--test-scala-version) "\"")
-           ))
-         (assert ensime-sbt-command)
-         (let ((default-directory (file-name-as-directory (plist-get proj :root-dir))))
-           (assert (= 0 (apply 'call-process ensime-sbt-command nil
-                               "*sbt-test-compilation*" nil '("compile")))))
-         (assert (directory-files (concat target "/test") nil "class$"))
-         (ensime-test-init-proj proj))
+      ;; (ensime-async-test
+      ;;  "Test debugging scala project."
+      ;;  ;; these test projects should really just be explicitly defined in the repo
+      ;;  (let* ((proj (ensime-create-tmp-project
+      ;;                `((:name
+      ;;                   "test/Test.scala"
+      ;;                   :contents ,(ensime-test-concat-lines
+      ;;                               "package test"
+      ;;                               "object Test {"
+      ;;                               "  def main(args: Array[String]) {"
+      ;;                               "    val a = \"cat\""
+      ;;                               "    val b = \"dog\""
+      ;;                               "    val c = \"bird\""
+      ;;                               "    println(a + b + c)"
+      ;;                               "  }"
+      ;;                               "}")))))
+      ;;         (target    (car (plist-get proj :targets)))
+      ;;         (src-files (plist-get proj :src-files)))
+      ;;    (ensime-create-file
+      ;;     (expand-file-name "build.sbt" (plist-get proj :root-dir))
+      ;;     (ensime-test-concat-lines
+      ;;      "import sbt._"
+      ;;      ""
+      ;;      "name := \"test\""
+      ;;      ""
+      ;;      "scalacOptions += \"-g:notailcalls\""
+      ;;      ""
+      ;;      (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+      ;;      (concat "scalaBinaryVersion := \"" (ensime--scala-binary-version ensime--test-scala-version) "\"")
+      ;;      ))
+      ;;    (assert ensime-sbt-command)
+      ;;    (let ((default-directory (file-name-as-directory (plist-get proj :root-dir))))
+      ;;      (assert (= 0 (apply 'call-process ensime-sbt-command nil
+      ;;                          "*sbt-test-compilation*" nil '("compile")))))
+      ;;    (assert (directory-files (concat target "/test") nil "class$"))
+      ;;    (ensime-test-init-proj proj))
 
-       ((:connected))
-       ((:compiler-ready :full-typecheck-finished)
-        (ensime-test-with-proj
-         (proj src-files)
-         (ensime-rpc-debug-set-break buffer-file-name 7)
-         ;; we could also use the ensime-sbt debugging launcher here
-         (let ((debugging (start-process
-                           "debugging"
-                           "*debugging*"
-                           "java"
-                           "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
-                           "-classpath" (concat (ensime--extract-scala-library-jar)
-                                                ensime--classpath-separator
-                                                (car (plist-get proj :targets)))
-                           "test.Test"))
-               (attach (lambda (p text)
-                         (when (s-contains? "Listening for transport dt_socket at address: 5005" text)
-                           (set-process-filter p nil)
-                           (ensime-db-attach "127.0.0.1" "5005")))))
-           (set-process-filter debugging attach))))
+      ;;  ((:connected))
+      ;;  ((:compiler-ready :full-typecheck-finished)
+      ;;   (ensime-test-with-proj
+      ;;    (proj src-files)
+      ;;    (ensime-rpc-debug-set-break buffer-file-name 7)
+      ;;    ;; we could also use the ensime-sbt debugging launcher here
+      ;;    (let ((debugging (start-process
+      ;;                      "debugging"
+      ;;                      "*debugging*"
+      ;;                      "java"
+      ;;                      "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
+      ;;                      "-classpath" (concat (ensime--extract-scala-library-jar)
+      ;;                                           ensime--classpath-separator
+      ;;                                           (car (plist-get proj :targets)))
+      ;;                      "test.Test"))
+      ;;          (attach (lambda (p text)
+      ;;                    (when (s-contains? "Listening for transport dt_socket at address: 5005" text)
+      ;;                      (set-process-filter p nil)
+      ;;                      (ensime-db-attach "127.0.0.1" "5005")))))
+      ;;      (set-process-filter debugging attach))))
 
-       ;; this doesn't always arrive
-       ;;(:debug-event evt (equal (plist-get evt :type) 'threadStart))
+      ;;  ;; this doesn't always arrive
+      ;;  ;;(:debug-event evt (equal (plist-get evt :type) 'threadStart))
 
-       (:debug-event evt (equal (plist-get evt :type) 'breakpoint)
-                     (ensime-test-with-proj
-                      (proj src-files)
-                      (let* ((thread-id (plist-get evt :thread-id))
-                             (trace (ensime-rpc-debug-backtrace thread-id 0 -1))
-                             (pc-file (file-truename (car src-files))))
-                        (when (eql system-type 'windows-nt)
-                          (aset pc-file 0 (upcase (aref pc-file 0)))
-                          (setq pc-file (replace-regexp-in-string "/" "\\\\" pc-file)))
-                        (ensime-assert trace)
-                        (let* ((frame-zero (nth 0 (plist-get trace :frames)))
-                               ;; Remove incidentals...
-                               (frame (plist-put frame-zero :this-object-id "NA")))
-                          (ensime-assert-equal
-                           frame
-                           `(:index 0 :locals
-                                    ((:index 0 :name "args" :summary "Array[]" :type-name "java.lang.String[]")
-                                     (:index 1 :name "a" :summary "\"cat\"" :type-name "java.lang.String")
-                                     (:index 2 :name "b" :summary "\"dog\"" :type-name "java.lang.String")
-                                     (:index 3 :name "c" :summary "\"bird\"" :type-name "java.lang.String"))
-                                    :num-args 1
-                                    :class-name "test.Test$"
-                                    :method-name "main"
-                                    :pc-location (:file ,pc-file :line 7)
-                                    :this-object-id "NA"))))
-                      (ensime-rpc-debug-stop)
-                      (ensime-test-cleanup proj))))
+      ;;  (:debug-event evt (equal (plist-get evt :type) 'breakpoint)
+      ;;                (ensime-test-with-proj
+      ;;                 (proj src-files)
+      ;;                 (let* ((thread-id (plist-get evt :thread-id))
+      ;;                        (trace (ensime-rpc-debug-backtrace thread-id 0 -1))
+      ;;                        (pc-file (file-truename (car src-files))))
+      ;;                   (when (eql system-type 'windows-nt)
+      ;;                     (aset pc-file 0 (upcase (aref pc-file 0)))
+      ;;                     (setq pc-file (replace-regexp-in-string "/" "\\\\" pc-file)))
+      ;;                   (ensime-assert trace)
+      ;;                   (let* ((frame-zero (nth 0 (plist-get trace :frames)))
+      ;;                          ;; Remove incidentals...
+      ;;                          (frame (plist-put frame-zero :this-object-id "NA")))
+      ;;                     (ensime-assert-equal
+      ;;                      frame
+      ;;                      `(:index 0 :locals
+      ;;                               ((:index 0 :name "args" :summary "Array[]" :type-name "java.lang.String[]")
+      ;;                                (:index 1 :name "a" :summary "\"cat\"" :type-name "java.lang.String")
+      ;;                                (:index 2 :name "b" :summary "\"dog\"" :type-name "java.lang.String")
+      ;;                                (:index 3 :name "c" :summary "\"bird\"" :type-name "java.lang.String"))
+      ;;                               :num-args 1
+      ;;                               :class-name "test.Test$"
+      ;;                               :method-name "main"
+      ;;                               :pc-location (:file ,pc-file :line 7)
+      ;;                               :this-object-id "NA"))))
+      ;;                 (ensime-rpc-debug-stop)
+      ;;                 (ensime-test-cleanup proj))))
 
    (ensime-async-test
     "REPL without server."

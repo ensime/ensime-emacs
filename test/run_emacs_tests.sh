@@ -21,7 +21,10 @@ fi
 
 if [ -z "$JDK_HOME" ] ; then
     if [ -n "$JAVA_HOME" ] ; then
-       export JDK_HOME="$JAVA_HOME"
+        export JDK_HOME="$JAVA_HOME"
+    elif [ -x `which jenv` ] ; then
+        JAVAC=`jenv which javac`
+        export JDK_HOME=$(readlink -f $JAVAC | sed "s:bin/javac::")
     elif [ -x "/usr/libexec/java_home" ] ; then
         export JDK_HOME=`/usr/libexec/java_home`
     else
