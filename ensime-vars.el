@@ -310,6 +310,11 @@ Possible types: `organizeImport', `rename', `extractLocal',
   :type 'boolean
   :group 'ensime-ui)
 
+(defcustom ensime-use-helm nil
+  "Enable helm for some ensime features"
+  :type 'boolean
+  :group 'ensime-ui)
+
 (provide 'ensime-vars)
 
 ;; Local Variables:
