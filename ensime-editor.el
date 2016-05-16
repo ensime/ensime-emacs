@@ -13,6 +13,9 @@
 
 (require 'dash)
 (require 'popup)
+(require 'ensime-vars)
+
+(autoload 'ensime-helm-select-entry "ensime-helm")
 
 (defvar ensime-compile-result-buffer-name "*ENSIME-Compilation-Result*")
 
@@ -685,6 +688,13 @@ Decide what line to insert QUALIFIED-NAME."
       (goto-char (point-at-bol))
       (funcall (funcall insert-import-fn insertion-range starting-point qualified-name)))))
 
+(defun ensime-ask-user-to-select-entry (title entries)
+  "Prompts the user to select an entry of entries"
+  (if ensime-use-helm
+      (ensime-helm-select-entry entries title)
+      (popup-menu* entries :point (point))
+    ))
+
 (defun ensime-import-type-at-point (&optional non-interactive)
   "Suggest possible imports of the qualified name at point.
  If user selects and import, add it to the import list."
@@ -703,8 +713,8 @@ Decide what line to insert QUALIFIED-NAME."
 		     (apply 'append suggestions)))
 	     (selected-name
 	      (if non-interactive (car names)
-		(popup-menu*
-		 names :point (point)))))
+        (ensime-ask-user-to-select-entry "import-type" names)
+    )))
 	(when selected-name
 	  (save-excursion
 	    (when (and (not (equal selected-name name))
