@@ -13,7 +13,7 @@
 
 (require 'ensime)
 (require 'espuds)
-(require 'scala-mode2)
+(require 'scala-mode)
 (require 'ert)
 
 (Setup

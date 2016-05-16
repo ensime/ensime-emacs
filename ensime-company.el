@@ -27,7 +27,7 @@
 (require 'ensime-util)
 (require 'company)
 (require 'yasnippet)
-(require 'scala-mode2-syntax)
+(require 'scala-mode-syntax)
 (require 's)
 (require 'dash)
 

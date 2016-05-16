@@ -23,7 +23,7 @@
   (require 'cl)
   (require 'ensime-macros))
 
-(require 'scala-mode2-syntax)
+(require 'scala-mode-syntax)
 
 ;; In order to efficiently and accurately match completion prefixes, we construct
 ;; a regular expression which matches scala identifiers in reverse.

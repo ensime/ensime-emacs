@@ -22,7 +22,8 @@
 ;;
 ;;; Code:
 
-(source melpa-stable)
+;; need to publish scala-mode to melpa-stable
+(source melpa)
 
 (package-file "ensime.el")
 

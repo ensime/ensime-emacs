@@ -5,7 +5,7 @@
   (require 'ensime-macros))
 
 (require 'cl-lib)
-(require 'scala-mode2-syntax)
+(require 'scala-mode-syntax)
 
 (defun ensime-goto-test (&optional other-window-p)
   "Locate the test file that corresponds to the class around the point,
