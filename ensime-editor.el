@@ -65,6 +65,12 @@
   "Key bindings for the uses popup.")
 
 
+(defvar ensime-user-select-entry 'ensime-user-select-entry-popup "Method used to prompt the user for a selection.")
+
+(defun ensime-user-select-entry-popup (entries name)
+  "Opens a popup to prompt the user for entry selection."
+    (popup-menu* entries :point (point))
+  )
 
 (defun ensime-goto-line (line)
   (goto-char (point-min))
@@ -703,8 +709,7 @@ Decide what line to insert QUALIFIED-NAME."
 		     (apply 'append suggestions)))
 	     (selected-name
 	      (if non-interactive (car names)
-		(popup-menu*
-		 names :point (point)))))
+		(funcall ensime-user-select-entry names "import-type"))))
 	(when selected-name
 	  (save-excursion
 	    (when (and (not (equal selected-name name))
