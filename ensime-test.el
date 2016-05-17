@@ -832,7 +832,7 @@
 				 "    val f = doBlo/*4*/"
 				 "    val g = doBlo/*5*/"
 				 "    val h = doByNa/*6*/"
-				 "    this.fie/*7*/"
+				 "      this.fie/*7*/"
 				 "    \"kjsdf\".hashCo/*8*/"
 				 "    \"kjsdf\".getByt/*8_1*/"
 				 "    5.toLo/*9*/"
