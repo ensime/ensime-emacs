@@ -47,46 +47,26 @@
   (equal 'typeInspect (plist-get info :info-type)))
 
 (defun ensime-type-name (type)
-  (plist-get type :name))
+  ;; legacy method
+  (replace-regexp-in-string "\\[.*" ""
+                            (plist-get type :name)))
+
+(defun ensime-type-full-name (type)
+  ;; legacy method
+  (replace-regexp-in-string "\\[.*" ""
+                            (plist-get type :full-name)))
 
 (defun ensime-type-is-object-p (type)
   (equal (plist-get type :decl-as) 'object))
 
-(defun ensime-type-full-name (type)
-  (if (plist-get type :arrow-type)
-      (plist-get type :name)
-    (plist-get type :full-name)))
-
 (defun ensime-type-full-name-with-args (type)
-  (if (plist-get type :arrow-type)
-      (plist-get type :name)
-    (concat
-     (plist-get type :full-name)
-     (ensime-type-type-args-suffix type))))
-
-(defun ensime-type-short-name-with-args (type)
-  (if (plist-get type :arrow-type)
-      (plist-get type :name)
-    (concat
-     (plist-get type :name)
-     (ensime-type-type-args-suffix type))))
-
-(defun ensime-type-type-args-suffix (type)
-  (let ((args (ensime-type-type-args type)))
-    (if args
-	(concat "["
-		(mapconcat
-		 (lambda(tpe)
-		   (ensime-type-name-with-args tpe)) args ", ")
-		"]")
-      "")))
+  (plist-get type :full-name))
 
 (defun ensime-type-param-sections (type)
   (plist-get type :param-sections))
 
 (defun ensime-type-name-with-args (type)
-  (concat (plist-get type :name)
-      (ensime-type-type-args-suffix type)))
+  (plist-get type :name))
 
 (defun ensime-type-is-function-p (type)
   (string-match "^scala.Function[0-9]*" (plist-get type :full-name)))

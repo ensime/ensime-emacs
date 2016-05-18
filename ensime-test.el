@@ -654,8 +654,7 @@
       (backward-char 1)
       (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-type-full-name) "java.lang.String")
       (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-name) "equalsIgnoreCase")
-      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-signature)
-			   "(x$1: String): Boolean")
+      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-signature) "(Ljava/lang/String;)Z")
       (ensime-assert (let ((url (ensime--inspector-doc-url-at-point)))
 		       (s-ends-with-p "java/lang/String.html#equalsIgnoreCase(java.lang.String)" (url-unhex-string url))))
 
@@ -663,21 +662,13 @@
       (ensime-assert (search-forward-regexp "^offsetByCodePoints" nil t))
       (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-type-full-name) "java.lang.String")
       (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-name) "offsetByCodePoints")
-      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-signature)
-			   "(x$1: Int,x$2: Int): Int")
+      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-signature) "(II)I")
 
       (ensime-assert (search-forward-regexp "Arra" nil t))
       (push-button)
-      (ensime-assert (search-forward-regexp "^class$" nil t))
-      (ensime-assert (search-forward-regexp "^scala.Array\\[T\\]$" nil t))
+      (ensime-assert (search-forward-regexp "^scala.Array$" nil t))
       (ensime-assert (search-forward-regexp "^(compan" nil t))
       (push-button)
-      (ensime-assert (search-forward-regexp "^object$" nil t))
-      (ensime-assert (search-forward-regexp "^scala.Array\\$$" nil t))
-      (ensime-assert (search-forward-regexp "^(compan" nil t))
-      (push-button)
-      (ensime-assert (search-forward-regexp "^class$" nil t))
-      (ensime-assert (search-forward-regexp "^scala.Array\\[T\\]$" nil t))
       (ensime-test-cleanup proj))))
 
    (ensime-async-test
@@ -1682,7 +1673,7 @@
       (ensime-assert-equal
        (ensime-implicit-notes-at (point))
        '("Implicit parameters added to call of stringToB(\"xxx\"): (zz: scala.Int)"
-         "Implicit conversion of \"xxx\" using stringToB: (s: String)(implicit x: Int)pack.B"))
+         "Implicit conversion of \"xxx\" using stringToB: java.lang.String => scala.Int => pack.B"))
 
       (ensime-test-cleanup proj))))
 

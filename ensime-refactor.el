@@ -237,7 +237,7 @@ Do not asks user about each one if `ensime-refactor-save-with-no-questions' is n
   "Add type annotation to current symbol."
   (interactive)
   (let* ((type (ensime-rpc-get-type-at-point))
-         (shortname (ensime-type-short-name-with-args type)))
+         (shortname (ensime-type-name-with-args type)))
     (save-excursion
       (forward-word)
       (while (let ((current-char (thing-at-point 'char)))
