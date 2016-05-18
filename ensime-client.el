@@ -858,13 +858,13 @@ copies. All other objects are used unchanged. List must not contain cycles."
   (ensime-eval
    `(swank:doc-uri-at-point ,file ,(ensime-externalize-offset point))))
 
-(defun ensime-rpc-doc-uri-for-symbol (fqn &optional member-name member-signature)
+(defun ensime-rpc-doc-uri-for-symbol (scala-name &optional member-name member-signature)
   (ensime-eval
-   `(swank:doc-uri-for-symbol ,fqn ,member-name ,member-signature)))
+   `(swank:doc-uri-for-symbol ,scala-name ,member-name ,member-signature)))
 
-(defun ensime-rpc-symbol-by-name (fqn &optional member-name member-signature)
+(defun ensime-rpc-symbol-by-name (scala-name &optional member-name member-signature)
   (ensime-eval
-   `(swank:symbol-by-name ,fqn ,member-name ,member-signature)))
+   `(swank:symbol-by-name ,scala-name ,member-name ,member-signature)))
 
 (defun ensime-rpc-method-bytecode (file line)
   (ensime-eval

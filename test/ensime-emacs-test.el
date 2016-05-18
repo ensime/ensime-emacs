@@ -79,16 +79,16 @@
       (-lambda ((full-path rel-to rel-path))
         (should (equal rel-path (ensime-relativise-path full-path rel-to))))))) 
 
-(ert-deftest ensime-emacs-test-parse-type-info-from-fqn ()
-  (let ((fqn '("scala.X"
+(ert-deftest ensime-emacs-test-parse-type-info-from-scala-name ()
+  (let ((scala-name'("scala.X"
                "Foo"
                "scala.collection.List[Option[Boolean]]"
                "scala.Function1[Char, Boolean]"
                "scala.collection.:=>[X, Y[Z, Q$R]]"
                "scala.collection.<repeated...>[X, Y, Z]")))
-    (-each fqn
+    (-each scala-name
       (lambda (f)
-        (should (equal f (ensime-type-full-name-with-args (ensime-parse-type-info-from-fqn f))))))))
+        (should (equal f (ensime-type-full-name-with-args (ensime-parse-type-info-from-scala-name f))))))))
 
 (ert-deftest ensime-emacs-test-short-local-name ()
   (let ((short-locals '(("Junk" "Junk")

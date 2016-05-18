@@ -146,7 +146,8 @@
 		(mapcar
 		 (lambda (p)
 		   (let* ((name (nth 0 p))
-			  (tpe (ensime-parse-type-info-from-fqn (nth 1 p))))
+                  ;; FIXME do we really need to do this client side?
+			  (tpe (ensime-parse-type-info-from-scala-name (nth 1 p))))
 		     (list name tpe))) section)
 		:is-implicit (and has-implicit (equal (car (last sections)) section)))
 	  ) sections))))

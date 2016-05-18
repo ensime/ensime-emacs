@@ -4,6 +4,8 @@
   (require 'cl)
   (require 'ensime-macros))
 
+(require 's)
+
 (defun ensime-search-sym-name (sym)
   (plist-get sym :name))
 
@@ -74,38 +76,59 @@
 (defun ensime-type-is-by-name-p (type)
   (string-match "^scala.<byname>" (plist-get type :full-name)))
 
-(defun ensime-parse-type-info-from-fqn (fqn)
-  "Returns a type-info structure parsed from an fqn, e.g.
+(defun ensime-parse-type-info-from-scala-name (scala-name)
+  "Returns a type-info structure parsed from a `scala-name', e.g.
  scala.foo.Foo[scala.Option[Int]]"
-  (let ((s fqn) (i 0))
-    (let ((ast (ensime--parse-type-from-fqn)))
+  ;; this shouldn't be needed, and there is no way to guarantee that
+  ;; it is well-formed. we should be asking the server
+  (let ((s scala-name) (i 0))
+    (let ((ast (ensime--parse-type-from-scala-name)))
       (ensime--build-type-info ast))))
 
 (defun ensime--build-type-info (ast)
-  (let* ((local-name (nth 1 ast))
-	 (path (nth 0 ast))
-	 (full-name (concat (if (> (length path) 0) (concat path ".") "") local-name))
-	 (args (nth 2 ast)))
-    `(:name ,local-name
-      :full-name ,full-name
-      :type-args ,(mapcar 'ensime--build-type-info args))))
+  (let* ((type-args (mapcar 'ensime--build-type-info (nth 2 ast)))
+         (path (nth 0 ast))
+         (short-type-params (ensime--build-type-parameters type-args nil))
+         (full-type-params (ensime--build-type-parameters type-args t))
+         (local-base (nth 1 ast))
+         (local-name (concat local-base short-type-params))
+         (full-base (if (s-blank? path)
+                        local-base
+                      (concat path "." local-base)))
+         (full-name (concat full-base full-type-params)))
+
+    `(:name ,local-name :full-name ,full-name :type-args ,type-args)))
+
+(defun ensime--build-type-parameters (params full)
+  "String representing a list of type-info `PARAMS'.
+`FULL' non-nil gets the full name."
+  (when params
+    (let* ((sym (if full :full-name :name))
+           (names (mapcar (lambda (e) (plist-get e sym)) params)))
+      (s-with names
+        (s-join ", ")
+        (s-prepend "[")
+        (s-append "]")))))
 
 (defconst ensime--ident-re "\\(?:<.+?>\\|[^][\\., ]+\\)")
-(defconst ensime--fqn-re (concat "\\(\\(?:" ensime--ident-re "\\.\\)" "*" "\\)" "\\(" ensime--ident-re "\\)"))
+(defconst ensime--scala-name-re (concat "\\(\\(?:" ensime--ident-re "\\.\\)" "*" "\\)" "\\(" ensime--ident-re "\\)"))
 (defconst ensime--type-args-re "\\[\\(.+?\\)\\]$")
 
-(defun ensime--parse-type-from-fqn ()
-  (when (and (< i (length s)) (ensime--match-re ensime--fqn-re))
-      (let* ((path (match-string 1 s))
-	     (local-name (match-string 2 s))
-	     (args (when (ensime--parse-one ?\[)
-		     (let ((args (ensime--parse-delimited
-				  'ensime--parse-type-from-fqn
-				  ensime--parser-commas-ws)))
-		       (when args
-			 (ensime--parse-one ?\])
-			 args)))))
-	(list (s-chop-suffix "." path) local-name args))))
+(defun ensime--parse-type-from-scala-name ()
+  "Parse the bound variable `S' into a list format."
+  ;; we shouln't need this. Anytime we want a data structure like this
+  ;; we should talk to the server.
+  (when (and (< i (length s)) (ensime--match-re ensime--scala-name-re))
+    (let* ((path (match-string 1 s))
+           (local-base (match-string 2 s))
+           (args (when (ensime--parse-one ?\[)
+                   (let ((args (ensime--parse-delimited
+                                'ensime--parse-type-from-scala-name
+                                ensime--parser-commas-ws)))
+                     (when args
+                       (ensime--parse-one ?\])
+                       args)))))
+      (list (s-chop-suffix "." path) local-base args))))
 
 (defun ensime--parse-one (char)
   (when (and (< i (length s)) (eq (aref s i) char))
@@ -230,14 +253,18 @@
 (defun ensime-note-message (note)
   (plist-get note :msg))
 
+;; FIXME: why is this function needed, doesn't the caller have everything?
 (defun ensime-brief-type-sig (completion-type-sig)
   "Return a formatted string representing the given method signature."
   ;;(ensime-brief-type-sig '(((("foo" "Person"))) "Dude"))
   ;;(ensime-brief-type-sig '(((("bar" "scala.collection.Person[X[Y]]"))) "Dude[Y]"))
   (let* ((sections (car completion-type-sig))
-	 (return-type (ensime-parse-type-info-from-fqn
+	 (return-type
+      ;; FIXME: do we really need to parse this client side?
+      ;;        why not just return the cadr of the input?
+      (ensime-parse-type-info-from-scala-name
 		       (cadr completion-type-sig)))
-	 (return-name (ensime-type-name-with-args return-type)))
+	 (return-name (ensime-type-name return-type)))
     (if sections
 	(format "%s: %s"
 		(mapconcat
@@ -246,9 +273,10 @@
 			   (mapconcat
 			    (lambda (param-pair)
 			      (let* ((name (car param-pair))
-				     (fqn (cadr param-pair))
-				     (tpe (ensime-parse-type-info-from-fqn fqn)))
-				(format "%s: %s" name (ensime-type-name-with-args tpe))))
+                         (scala-name (cadr param-pair))
+                         ;; FIXME do we really need to parse this client side?
+                         (tpe (ensime-parse-type-info-from-scala-name scala-name)))
+                    (format "%s: %s" name (ensime-type-name tpe))))
 			    section ", ")))
 		 sections "=>")
 		return-name)
