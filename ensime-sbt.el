@@ -61,9 +61,9 @@
   (interactive)
   (sbt-command "clean"))
 
-(defun ensime-sbt-do-gen-ensime ()
+(defun ensime-sbt-do-ensime-config ()
   (interactive)
-  (sbt-command "gen-ensime"))
+  (sbt-command "ensimeConfig"))
 
 (defun ensime-sbt-do-package ()
   (interactive)

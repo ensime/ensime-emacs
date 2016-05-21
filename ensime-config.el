@@ -195,8 +195,8 @@ corresponding to the current buffer, followed by the sbt task
 needed to regenerate that config file. (Doesn't understand nested
 project directories, because neither does ensime-sbt.)"
   (if (equal (expand-file-name "project/" project-root) default-directory)
-      (cons (ensime-default-config-file) "gen-ensime-project")
-    (cons (ensime-default-config-file project-root) "gen-ensime")))
+      (cons (ensime-default-config-file) "ensimeConfigProject")
+    (cons (ensime-default-config-file project-root) "ensimeConfig")))
 
 (defun ensime--maybe-refresh-config (force after-refresh-fn no-refresh-fn)
   (let ((no-refresh-reason "couldn't detect project type"))

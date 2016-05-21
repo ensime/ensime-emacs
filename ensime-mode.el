@@ -60,7 +60,7 @@
       (define-key prefix-map (kbd "C-b S") 'ensime-stacktrace-switch)
       (define-key prefix-map (kbd "C-b c") 'ensime-sbt-do-compile)
       (define-key prefix-map (kbd "C-b n") 'ensime-sbt-do-clean)
-      (define-key prefix-map (kbd "C-b E") 'ensime-sbt-do-gen-ensime)
+      (define-key prefix-map (kbd "C-b E") 'ensime-sbt-do-ensime-config)
       (define-key prefix-map (kbd "C-b o") 'ensime-sbt-do-test-only-dwim)
       (define-key prefix-map (kbd "C-b p") 'ensime-sbt-do-package)
       (define-key prefix-map (kbd "C-b r") 'ensime-sbt-do-run)
