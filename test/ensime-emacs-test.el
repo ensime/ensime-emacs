@@ -79,7 +79,7 @@
       (-lambda ((full-path rel-to rel-path))
         (should (equal rel-path (ensime-relativise-path full-path rel-to))))))) 
 
-(ert-deftest ensime-emacs-test-parse-type-info-from-scala-name ()
+(ert-deftest ensime-emacs-test-parse-type-info-from-scala-name-roundtrip ()
   (let ((scala-name'("scala.X"
                "Foo"
                "scala.collection.List[Option[Boolean]]"
@@ -88,7 +88,28 @@
                "scala.collection.<repeated...>[X, Y, Z]")))
     (-each scala-name
       (lambda (f)
-        (should (equal f (ensime-type-full-name-with-args (ensime-parse-type-info-from-scala-name f))))))))
+        (let ((parsed (ensime-parse-type-info-from-scala-name f)))
+          (should (equal f (ensime-type-full-name-with-args parsed))))))))
+
+(ert-deftest ensime-emacs-test-parse-type-info-from-scala-name ()
+  (should (equal "scala.<byname>[java.lang.String]"
+                 (plist-get (ensime-parse-type-info-from-scala-name "=> java.lang.String") :full-name)))
+  (should (equal "scala.Function0[java.lang.String]"
+                 (plist-get (ensime-parse-type-info-from-scala-name "() => java.lang.String") :full-name)))
+  (should (equal "scala.Function1[scala.Int, java.lang.String]"
+                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int) => java.lang.String") :full-name)))
+  (should (equal "scala.Function2[scala.Int, scala.Long, java.lang.String]"
+                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int, scala.Long) => java.lang.String") :full-name)))
+  (should (equal "scala.Function3[scala.Int, scala.Long, scala.Boolean, java.lang.String]"
+                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int, scala.Long, scala.Boolean) => java.lang.String") :full-name)))
+
+  (should (equal "scala.Tuple1[scala.Int]"
+                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int)") :full-name)))
+  (should (equal "scala.Tuple2[scala.Int, scala.Long]"
+                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int, scala.Long)") :full-name)))
+  (should (equal "scala.Tuple3[scala.Int, scala.Long, scala.Boolean]"
+                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int, scala.Long, scala.Boolean)") :full-name)))
+  )
 
 (ert-deftest ensime-emacs-test-short-local-name ()
   (let ((short-locals '(("Junk" "Junk")

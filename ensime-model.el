@@ -116,8 +116,20 @@
 
 (defun ensime--parse-type-from-scala-name ()
   "Parse the bound variable `S' into a list format."
-  ;; we shouln't need this. Anytime we want a data structure like this
-  ;; we should talk to the server.
+  ;;
+  ;; HERE BE DRAGONS
+  ;;
+  ;; Anytime we want a data structure like this we should talk to the server.
+  ;;
+  (dolist (sub '(("^[ ]*=> \\(.*\\)" . "scala.<byname>[\\1]")
+                 ("() => \\(.*\\)" . "scala.Function0[\\1]")
+                 ("(\\([^,]*\\)) => \\(.*\\)" . "scala.Function1[\\1, \\2]")
+                 ("(\\([^,]*\\), \\([^,]*\\)) => \\(.*\\)" . "scala.Function2[\\1, \\2, \\3]")
+                 ("(\\([^,]*\\), \\([^,]*\\), \\([^,]*\\)) => \\(.*\\)" . "scala.Function3[\\1, \\2, \\3, \\4]")
+                 ("(\\([^,]*\\))" . "scala.Tuple1[\\1]")
+                 ("(\\([^,]*\\), \\([^,]*\\))" . "scala.Tuple2[\\1, \\2]")
+                 ("(\\([^,]*\\), \\([^,]*\\), \\([^,]*\\))" . "scala.Tuple3[\\1, \\2, \\3]")))
+    (setq s (replace-regexp-in-string (car sub) (cdr sub) s)))
   (when (and (< i (length s)) (ensime--match-re ensime--scala-name-re))
     (let* ((path (match-string 1 s))
            (local-base (match-string 2 s))
