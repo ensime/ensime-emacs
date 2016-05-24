@@ -1673,7 +1673,7 @@
       (ensime-assert-equal
        (ensime-implicit-notes-at (point))
        '("Implicit parameters added to call of stringToB(\"xxx\"): (zz: scala.Int)"
-         "Implicit conversion of \"xxx\" using stringToB: java.lang.String => scala.Int => pack.B"))
+         "Implicit conversion of \"xxx\" using stringToB: (java.lang.String) => (scala.Int) => pack.B"))
 
       (ensime-test-cleanup proj))))
 
