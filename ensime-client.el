@@ -995,6 +995,14 @@ copies. All other objects are used unchanged. List must not contain cycles."
      ,max-results
      )))
 
+(defun ensime-rpc-public-symbol-search
+  (names max-results)
+  (ensime-eval
+   `(swank:public-symbol-search
+     ,names
+     ,max-results
+     )))
+
 (defun ensime-rpc-async-public-symbol-search
   (names max-results continue)
   (ensime-eval-async

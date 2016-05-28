@@ -25,6 +25,8 @@
 
 (require 'dash)
 
+(autoload 'ensime-helm-search "ensime-helm")
+
 (defvar ensime-search-mode nil
   "Enables the ensime-search minor mode.")
 
@@ -119,9 +121,14 @@
   (summary-start 0)
   (data nil))
 
-
 (defun ensime-search ()
   "The main entrypoint for ensime-search-mode.
+   Initiate an incremental search of all live buffers."
+  (interactive)
+  (if ensime-use-helm (ensime-helm-search) (ensime-search-classic)))
+
+(defun ensime-search-classic ()
+  "The classic entrypoint for ensime-search-mode.
    Initiate an incremental search of all live buffers."
   (interactive)
   (ensime-with-conn-interactive
@@ -191,9 +198,14 @@
     (let ((ensime-dispatching-connection ensime-buffer-connection))
       (ensime-search-quit)
       (let* ((r ensime-search-current-selected-result)
-	     (item (ensime-search-result-data r)))
+             (item (ensime-search-result-data r)))
 
-	;; If the chosen item has a source location,
+        ;; If the chosen item has a source location,
+        ;; jump there..
+        (ensime-search-jump-to-item item)))))
+
+(defun ensime-search-jump-to-item (item)
+  "Opens the item in a new buffer if the item has a source location"
 	;; jump there..
 	(let ((pos (ensime-search-sym-pos item)))
 	  (let* ((file-name (ensime-pos-file pos))
@@ -220,7 +232,7 @@
 		   ))
 
 		 (t (ensime-inspect-by-path
-		     (ensime-search-sym-name item))))))))))))
+		     (ensime-search-sym-name item)))))))))
 
 
 (defun ensime-search-next-match ()
