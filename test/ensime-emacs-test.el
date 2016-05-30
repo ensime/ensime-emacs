@@ -3,6 +3,31 @@
 ;; Copyright (C) 2015 ENSIME authors
 ;; License: http://www.gnu.org/licenses/gpl.html
 
+;; might be nice to put this test data in a separate file
+(defconst
+  ensime-test-example-type-info-1
+  '(:arrow-type t
+                :name "(Position, Int, Boolean) => CompletionInfoList"
+                :full-name "(scala.reflect.internal.util.Position, scala.Int, scala.Boolean) => org.ensime.api.CompletionInfoList"
+                :result-type (:arrow-type nil
+                                          :name "CompletionInfoList"
+                                          :decl-as class
+                                          :full-name "org.ensime.api.CompletionInfoList")
+                :param-sections ((:params (
+                                           ("inputP" (:arrow-type nil :name "Position" :decl-as class :full-name "scala.reflect.internal.util.Position"))
+                                           ("maxResultsArg" (:arrow-type nil :name "Int" :decl-as class :full-name "scala.Int"))
+                                           ("caseSens" (:arrow-type nil :name "Boolean" :decl-as class :full-name "scala.Boolean")))))))
+
+(defconst
+  ensime-test-example-type-info-2
+  '(:arrow-type t :name "(A) => StringFormat[A]" :full-name "(scala.Predef.A) => scala.Predef.StringFormat[scala.Predef.A]"
+                :result-type (:arrow-type nil
+                                          :name "StringFormat[A]"
+                                          :decl-as class
+                                          :full-name "scala.Predef.StringFormat[scala.Predef.A]"
+                                          :type-args ((:arrow-type nil :name "A" :decl-as nil :full-name "scala.Predef.A")))
+                :param-sections ((:params (("self" (:arrow-type nil :name "A" :decl-as nil :full-name "scala.Predef.A")))))))
+
 (ert-deftest ensime-emacs-test-simple-config-loading ()
   (let ((conf (->> ".ensime-simple-config"
                    ensime-emacs-test-resource-filename
@@ -78,38 +103,6 @@
     (-each relativise
       (-lambda ((full-path rel-to rel-path))
         (should (equal rel-path (ensime-relativise-path full-path rel-to))))))) 
-
-(ert-deftest ensime-emacs-test-parse-type-info-from-scala-name-roundtrip ()
-  (let ((scala-name'("scala.X"
-               "Foo"
-               "scala.collection.List[Option[Boolean]]"
-               "scala.Function1[Char, Boolean]"
-               "scala.collection.:=>[X, Y[Z, Q$R]]"
-               "scala.collection.<repeated...>[X, Y, Z]")))
-    (-each scala-name
-      (lambda (f)
-        (let ((parsed (ensime-parse-type-info-from-scala-name f)))
-          (should (equal f (ensime-type-full-name-with-args parsed))))))))
-
-(ert-deftest ensime-emacs-test-parse-type-info-from-scala-name ()
-  (should (equal "scala.<byname>[java.lang.String]"
-                 (plist-get (ensime-parse-type-info-from-scala-name "=> java.lang.String") :full-name)))
-  (should (equal "scala.Function0[java.lang.String]"
-                 (plist-get (ensime-parse-type-info-from-scala-name "() => java.lang.String") :full-name)))
-  (should (equal "scala.Function1[scala.Int, java.lang.String]"
-                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int) => java.lang.String") :full-name)))
-  (should (equal "scala.Function2[scala.Int, scala.Long, java.lang.String]"
-                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int, scala.Long) => java.lang.String") :full-name)))
-  (should (equal "scala.Function3[scala.Int, scala.Long, scala.Boolean, java.lang.String]"
-                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int, scala.Long, scala.Boolean) => java.lang.String") :full-name)))
-
-  (should (equal "scala.Tuple1[scala.Int]"
-                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int)") :full-name)))
-  (should (equal "scala.Tuple2[scala.Int, scala.Long]"
-                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int, scala.Long)") :full-name)))
-  (should (equal "scala.Tuple3[scala.Int, scala.Long, scala.Boolean]"
-                 (plist-get (ensime-parse-type-info-from-scala-name "(scala.Int, scala.Long, scala.Boolean)") :full-name)))
-  )
 
 (ert-deftest ensime-emacs-test-short-local-name ()
   (let ((short-locals '(("Junk" "Junk")
@@ -263,4 +256,36 @@
                  "2.11"))
   (should (equal (ensime--scala-binary-version "2.11.8-tl-201604131941")
                  "2.11"))
+  )
+
+(ert-deftest ensime-param-section-accepts-block-p-test ()
+  (should (equal t
+                 (ensime-param-section-accepts-block-p
+                  '(:params (("block" (:arrow-type t
+                                                   :name "(Int) => String"
+                                                   :full-name "(scala.Int) => java.lang.String"
+                                                   :result-type (:arrow-type nil
+                                                                             :name "String"
+                                                                             :decl-as class
+                                                                             :full-name "java.lang.String")
+                                                   :param-sections ((:params (("_0" (:arrow-type nil
+                                                                                                 :name "Int"
+                                                                                                 :decl-as class
+                                                                                                 :full-name "scala.Int"))))))))))))
+  )
+
+(require 'ensime-company)
+(ert-deftest ensime--build-yasnippet-for-call-test ()
+  (setq ensime-test-data
+        '((:params (("block" (:arrow-type t
+                                          :name "(Int) => String" :full-name "(scala.Int) => java.lang.String"
+                                          :result-type (:arrow-type nil :name "String" :decl-as class :full-name "java.lang.String")
+                                          :param-sections ((:params (("_0" (:arrow-type nil :name "Int" :decl-as class :full-name "scala.Int")))))))))))
+
+  (should (equal " { ${1:_0: Int} => ${2:String} }$0"
+                 (ensime--build-yasnippet-for-call ensime-test-data nil t)))
+
+  (should (equal "(${1:block: (Int) => String})"
+                 (ensime--build-yasnippet-for-call ensime-test-data nil nil)))
+
   )

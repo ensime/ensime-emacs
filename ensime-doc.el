@@ -28,8 +28,7 @@
  browsing the documentation for those objects."
   (ensime--normalise-url
    (ensime-rpc-doc-uri-for-symbol (ensime-type-full-name type)
-                                  (when member (ensime-member-name member))
-                                  (when member (ensime-type-id (ensime-member-type member))))))
+                                  (when member (ensime-member-name member)))))
 
 (defun ensime-show-doc-for-symbol-at-point ()
   "Browse to documentation for the symbol at current point."

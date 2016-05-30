@@ -591,27 +591,11 @@ This is more compatible with the CL reader."
 
 (defun ensime-log-event (event)
   "Record the fact that EVENT occurred."
-  (when ensime-log-events
-    (with-current-buffer (ensime-events-buffer)
-      ;; trim?
-      (when (> (buffer-size) 100000)
-	(goto-char (/ (buffer-size) 2))
-	(re-search-forward "^(" nil t)
-	(delete-region (point-min) (point)))
-      (goto-char (point-max))
-      (save-excursion
-	(ensime-pprint-event event (current-buffer)))
-      (when (and (boundp 'outline-minor-mode)
-		 outline-minor-mode)
-	(hide-entry))
-      (goto-char (point-max)))))
-
-(defun ensime-pprint-event (event buffer)
-  "Pretty print EVENT in BUFFER with limited depth and width."
-  (let ((print-length 20)
-	(print-level 6)
-	(pp-escape-newlines t))
-    (pp (ensime-copy-event-for-print event) buffer)))
+  (let ((syms (plist-get (plist-get (plist-get event :return) :ok) :syms)))
+    (when (and ensime-log-events (not syms)) ;; syms are very noisy
+      (with-current-buffer (ensime-events-buffer)
+        (goto-char (point-max))
+        (print event (current-buffer))))))
 
 (defun ensime-events-buffer ()
   "Return or create the event log buffer."

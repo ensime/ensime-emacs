@@ -62,7 +62,7 @@
 
 (defun ensime-ac-get-doc (item)
   "Return doc for given item."
-  (ensime-brief-type-sig (get-text-property 0 'type-sig item)))
+  (plist-get (get-text-property 0 'type-info item) :full-name))
 
 (defun ensime-ac-completion-prefix ()
   "Starting at current point. Find the point of completion."
@@ -90,8 +90,7 @@ be used later to give contextual help when entering arguments."
     ;; If this member is callable, lookup call completion
     ;; information to show parameter hints.
     (when is-callable
-
-      (let* ((call-info (ensime-call-completion-info candidate))
+      (let* ((call-info (get-text-property 0 'type-info candidate))
 	     (param-sections (ensime-type-param-sections call-info)))
 	(when (and call-info param-sections)
 
@@ -268,8 +267,7 @@ be used later to give contextual help when entering arguments."
            (props '(:annotation-function
                     (lambda (m)
                       (when (get-text-property 0 'is-callable m)
-                        (ensime-brief-type-sig
-                         (get-text-property 0 'type-sig m))))
+                        (plist-get (get-text-property 0 'type-info m) :full-name)))
                     :exit-function
                     (lambda (m status)
                       (when (eq status 'finished)

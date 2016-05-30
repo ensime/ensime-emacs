@@ -23,6 +23,14 @@
 
 (require 'cl-lib)
 
+(defmacro ensime-plist-bind (args expr &rest body)
+  ;; http://emacs.stackexchange.com/questions/22542
+  "`destructuring-bind' without the boilerplate for plists."
+  `(cl-destructuring-bind
+       (&key ,@args &allow-other-keys)
+       ,expr
+     ,@body))
+
 (defmacro ensime-with-conn-interactive (conn-sym &rest body)
   "Surround body forms with a check to see if we're connected.
 If not, message the user."
