@@ -41,7 +41,6 @@ Each argument is a tab-stop.
 
 Non-nil `INFIX' to omit parenthesis, `PASS-FUNCTION-BLOCK' to use
 block notation for the final parameter."
-  (message "BUILD (ensime--build-yasnippet-for-call %S %S %S)" param-sections infix pass-function-block)
   (let ((tab-stop 0)
         (section-count 0))
     (mapconcat
@@ -116,14 +115,22 @@ block notation for the final parameter."
       (indent-according-to-mode))))
 
 (defun ensime-company-enable ()
-  (set (make-local-variable 'company-backends) '(ensime-company))
-  (company-mode)
-  (yas-minor-mode 1)
+  (make-local-variable 'company-backends)
+  (push #'ensime-company company-backends)
+  (company-mode t)
+
   (set (make-local-variable 'company-idle-delay) 0)
   (set (make-local-variable 'company-minimum-prefix-length) 2)
+
+  ;; https://github.com/joaotavora/yasnippet/issues/708#issuecomment-222517433
+  (yas-minor-mode t)
+  (make-local-variable 'yas-minor-mode-map)
+  (define-key yas-minor-mode-map [(tab)] nil)
+  (define-key yas-minor-mode-map (kbd "TAB") nil)
+
   (if (window-system)
-      (local-set-key [tab] 'ensime-company-complete-or-indent)
-      (local-set-key (kbd "TAB") 'ensime-company-complete-or-indent)))
+      (local-set-key [tab] #'ensime-company-complete-or-indent)
+    (local-set-key (kbd "TAB") #'ensime-company-complete-or-indent)))
 
 (defun ensime--yasnippet-complete-action (&optional candidate-in force-block)
   "Side-effect yasnippet completion for the candidate.
@@ -222,8 +229,6 @@ been inserted immediately prior to the point."
                param-sections
                (or is-infix is-field-assigner)
                pass-function-block)))
-        (message "MAYBE-BRACES %S" maybe-braces)
-        (setq yas-minor-mode t) ;; WTF? https://github.com/joaotavora/yasnippet/issues/708
         (yas-expand-snippet snippet (point) (point))))))
 
 (defun ensime-company (command &optional arg &rest rest)

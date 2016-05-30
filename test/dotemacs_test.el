@@ -3,6 +3,7 @@
       ensime-log-events nil ;; change to `t' for debug info
       ensime--debug-messages nil ;; change to `t' for debug info
       ensime-typecheck-when-idle nil
+      company-backends nil
       user-emacs-directory (expand-file-name
                             (concat ".cask/" emacs-version)))
 
@@ -24,6 +25,8 @@
 (add-to-list 'load-path default-directory)
 (require 'ensime)
 (require 'ensime-test)
+
+
 
 ;; uncomment to debug the server
 ;;(setq ensime-server-logback (concat ensime-test-dev-home "/test/logback.xml"))
