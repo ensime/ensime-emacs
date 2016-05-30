@@ -63,17 +63,15 @@
   "Maps plist structures to propertized strings that will survive
  being passed through the innards of auto-complete or company."
   (mapcar
-   (lambda (m)
-     (-let (((&plist
-              :type-info type-info
-              :is-callable is-callable
-              :to-insert to-insert
-              :name name) m))
-       (propertize name
-                   'symbol-name name
-                   'type-info type-info
-                   'is-callable is-callable
-                   'to-insert to-insert)))
+   (lambda (completion)
+     (ensime-plist-bind
+      (type-info is-callable to-insert name)
+      completion
+      (propertize name
+                  'symbol-name name
+                  'type-info type-info
+                  'is-callable is-callable
+                  'to-insert to-insert)))
    completions))
 
 
