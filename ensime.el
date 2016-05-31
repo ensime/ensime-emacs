@@ -88,7 +88,7 @@
           (ensime--maybe-update-and-start orig-bfn))
       ('error (error (format
                       "check that sbt is on your PATH and see the Troubleshooting Guide for further steps %s [%s]"
-                      "http://ensime.github.io/editors/emacs/troubleshooting/" ex))))))
+                      "http://ensime.org/editors/emacs/troubleshooting/" ex))))))
 
 ;;;###autoload
 (defun ensime-remote (host port)

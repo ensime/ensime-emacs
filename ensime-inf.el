@@ -189,7 +189,7 @@ the current project's dependencies. Returns list of form (cmd [arg]*)"
                                      ensime--classpath-separator t))))))
     (if config
         (list
-         :java (concat (plist-get config :java-home) "/bin/java")
+         :java (expand-file-name "bin/java" (plist-get config :java-home))
          :java-flags (or (plist-get config :java-flags) ensime-default-java-flags)
          :classpath (ensime--build-classpath
                      (delete-dups (apply #'append
