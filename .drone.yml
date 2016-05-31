@@ -3,6 +3,7 @@ build:
   pull: true
   environment:
     - SCALA_VERSION=2.11.8
+    - ENSIME_SERVER_VERSION=0.9.10-SNAPSHOT
   commands:
     - git log | head -n 20 ;
     - host `curl -s http://httpbin.org/ip | jq -r '.origin'` || true ;

@@ -81,7 +81,7 @@
   file-name)
 
 (defvar ensime--test-scala-version
-  (or (getenv "SCALA_VERSION") "2.11.4"))
+  (or (getenv "SCALA_VERSION") "2.11.8"))
 
 (defun ensime-create-tmp-project
     (src-files &optional extra-config subproject-name extra-subproject-dirs)
@@ -109,7 +109,7 @@
 			      :cache-dir ,cache-dir
 			      :name "test"
 			      :scala-version ,ensime--test-scala-version
-			      :java-home ,(getenv "JDK_HOME")
+			      :java-home ,(getenv "JAVA_HOME")
 			      :java-flags ("-Xmx1g" "-Xss2m" "-XX:MaxPermSize=128m")
 			      :subprojects ((:name ,sp-name
 						   :module-name ,sp-name
@@ -1251,8 +1251,6 @@
      (ensime-test-with-proj
       (proj src-files)
       (find-file (car src-files))
-      ;; Formatting became synchronous with protocol 0.8.11 :-(
-      (ensime-assert (version< "0.8.10" (ensime-protocol-version) ))
       (ensime-format-source)
       (let ((src (buffer-substring-no-properties
                   (point-min) (point-max))))

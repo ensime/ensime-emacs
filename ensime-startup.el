@@ -119,8 +119,7 @@ saveClasspathTask := {
             (ensime--maybe-start-server
              (generate-new-buffer-name (concat "*" buffer "*"))
              server-java scala-version server-flags
-             (list* (concat "JDK_HOME=" server-java)
-                    (concat "JAVA_HOME=" server-java)
+             (list* (concat "JAVA_HOME=" server-java)
                     server-env)
              config-file
              cache-dir))

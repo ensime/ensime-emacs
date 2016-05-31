@@ -937,9 +937,7 @@ copies. All other objects are used unchanged. List must not contain cycles."
   (ensime-eval `(swank:unload-all)))
 
 (defun ensime-rpc-async-typecheck-file (file-name continue)
-  (if (version< (ensime-protocol-version) "0.8.11")
-      (ensime-eval-async `(swank:typecheck-file ,file-name) continue)
-    (ensime-eval-async `(swank:typecheck-file (:file ,file-name)) continue)))
+  (ensime-eval-async `(swank:typecheck-file (:file ,file-name)) continue))
 
 (defun ensime-rpc-async-typecheck-files (file-names continue)
   (ensime-eval-async `(swank:typecheck-files ,file-names) continue))
@@ -955,7 +953,6 @@ copies. All other objects are used unchanged. List must not contain cycles."
   (ensime-eval-async `(swank:format-source ,file-names) continue))
 
 (defun ensime-rpc-format-buffer ()
-  (assert (version<= "0.8.11" (ensime-protocol-version)))
   (ensime-eval `(swank:format-one-source (:file ,buffer-file-name
                                           :contents ,(ensime-get-buffer-as-string)))))
 
@@ -1080,17 +1077,14 @@ copies. All other objects are used unchanged. List must not contain cycles."
 		     continue))
 
 (defun ensime-rpc-async-symbol-designations-for-buffer (start end requested-types continue)
-  (let ((file (cond ((version<= "0.8.19" (ensime-protocol-version))
-		     (ensime-src-info-for-current-buffer))
-		    (t buffer-file-name))))
+  (let ((file (ensime-src-info-for-current-buffer)))
     (ensime-eval-async `(swank:symbol-designations ,file ,start ,end ,requested-types)
 		       continue)))
 
 (defun ensime-rpc-implicit-info-in-range (start end)
-  (when (version<= "0.8.16" (ensime-protocol-version))
-    (ensime-eval `(swank:implicit-info
-                   ,(buffer-file-name)
-                   (,(ensime-externalize-offset start) ,(ensime-externalize-offset end))))))
+  (ensime-eval `(swank:implicit-info
+                 ,(buffer-file-name)
+                 (,(ensime-externalize-offset start) ,(ensime-externalize-offset end)))))
 
 (defun ensime-rpc-get-call-completion (id)
   (if (and (integerp id) (> id -1))

@@ -66,7 +66,7 @@
 (autoload 'ensime-company-enable "ensime-company")
 (autoload 'ensime-ac-enable "ensime-auto-complete")
 
-(defvar ensime-protocol-version "0.7")
+(defvar ensime-protocol-version "0.8.21")
 
 (defvar ensime-prefer-noninteractive nil
   "State variable used for regression testing, and for skipping prompt in conjunction with sbt.")

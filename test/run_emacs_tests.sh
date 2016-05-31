@@ -11,29 +11,22 @@
 # tests must be run from the parent of the test directory
 cd "`dirname $0`/../"
 
-if [ -z "$SCALA_VERSION" ] ; then
-    export SCALA_VERSION=2.11.8
-fi
-
+# allows overriding which emacs to use
 if [ -z "$EMACS" ] ; then
     export EMACS=`which emacs`
 fi
 
-if [ -z "$JDK_HOME" ] ; then
-    if [ -n "$JAVA_HOME" ] ; then
-        export JDK_HOME="$JAVA_HOME"
-    elif [ -x `which jenv` ] ; then
-        JAVAC=`jenv which javac`
-        export JDK_HOME=$(readlink -f $JAVAC | sed "s:bin/javac::")
-    elif [ -x "/usr/libexec/java_home" ] ; then
-        export JDK_HOME=`/usr/libexec/java_home`
-    else
-        JAVAC=`which javac`
-        export JDK_HOME=$(readlink -f $JAVAC | sed "s:bin/javac::")
-    fi
+# set JAVA_HOME based on the environment
+if [ -x `which jenv` ] ; then
+    JAVAC=`jenv which javac`
+    export JAVA_HOME=$(readlink -f $JAVAC | sed "s:bin/javac::")
+elif [ -x "/usr/libexec/java_home" ] ; then
+    export JAVA_HOME=`/usr/libexec/java_home`
+else
+    JAVAC=`which javac`
+    export JAVA_HOME=$(readlink -f $JAVAC | sed "s:bin/javac::")
 fi
-export JAVA_HOME="$JDK_HOME/jre"
-export PATH=$JDK_HOME/bin:$PATH
+export PATH=$JAVA_HOME/bin:$PATH
 
 if [ $# -ge 1 ]; then
   exec "$EMACS" --no-site-file --no-init-file --load test/dotemacs_test.el --eval "(ensime-run-one-test \"${*}\")"
