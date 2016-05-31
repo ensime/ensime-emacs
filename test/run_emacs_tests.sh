@@ -28,6 +28,8 @@ else
 fi
 export PATH=$JAVA_HOME/bin:$PATH
 
+echo JAVA_HOME=$JAVA_HOME
+
 if [ $# -ge 1 ]; then
   exec "$EMACS" --no-site-file --no-init-file --load test/dotemacs_test.el --eval "(ensime-run-one-test \"${*}\")"
 else
