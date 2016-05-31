@@ -17,7 +17,7 @@ if [ -z "$EMACS" ] ; then
 fi
 
 # set JAVA_HOME based on the environment
-if [ -x `which jenv` ] ; then
+if [ -x "`which jenv`" ] ; then
     JAVAC=`jenv which javac`
     export JAVA_HOME=$(readlink -f $JAVAC | sed "s:bin/javac::")
 elif [ -x "/usr/libexec/java_home" ] ; then
