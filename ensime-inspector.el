@@ -37,15 +37,24 @@
   "Type and package inspector key bindings.")
 
 (defalias 'ensime-print-type-at-point 'ensime-type-at-point)
-(defun ensime-type-at-point (&optional arg)
+(defun ensime-type-at-point (&optional arg &optional use-full-name)
   "Echo the type at point to the minibuffer.
-A prefix argument will add the type to the kill ring."
+A prefix argument will add the type to the kill ring.
+If additional parameter use-full-name is provided it'll use type fullname"
   (interactive "P")
   (let* ((type (ensime-rpc-get-type-at-point))
-         (fullname (ensime-type-full-name-with-args type)))
+         (type-name (if use-full-name
+                        (ensime-type-full-name-with-args type)
+                      (ensime-type-name-with-args type))))
     (when arg
-      (kill-new fullname))
-    (message fullname)))
+      (kill-new type-name))
+    (message type-name)))
+
+(defun ensime-type-at-point-full-name (&optional arg)
+  "Echo the full type name at point to the minibuffer.
+A prefix argument will add the type to the kill ring."
+  (interactive "P")
+  (ensime-type-at-point arg t))
 
 (defun ensime-inspector-buffer-p (buffer)
   "Is this an ensime inspector buffer?"

@@ -28,6 +28,7 @@
       (define-key prefix-map (kbd "C-v d") 'ensime-show-doc-for-symbol-at-point)
       (define-key prefix-map (kbd "C-v D") 'ensime-project-docs)
       (define-key prefix-map (kbd "C-v t") 'ensime-type-at-point)
+      (define-key prefix-map (kbd "C-v T") 'ensime-type-at-point-full-name)
       (define-key prefix-map (kbd "C-v e") 'ensime-print-errors-at-point)
       (define-key prefix-map (kbd "C-v .") 'ensime-expand-selection-command)
 
