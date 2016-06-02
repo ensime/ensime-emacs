@@ -135,9 +135,8 @@ block notation for the final parameter."
 (defun ensime--yasnippet-complete-action (&optional candidate-in force-block)
   "Side-effect yasnippet completion for the candidate.
 The candidate is provided as a string object with text properties
-`IS-CALLABLE' (boolean) `TO-INSERT' (string) and
-`TYPE-INFO' (ensime-type-info) in either `CANDIDATE-IN' or the
-dynamic scope `CANDIDATE'.
+`TO-INSERT' (string) and `TYPE-INFO' (ensime-type-info) in either
+`CANDIDATE-IN' or the dynamic scope `CANDIDATE'.
 
 `FORCE-BLOCK' is an optional character to use to open the
 bracketing.
@@ -146,9 +145,9 @@ This is typically called after the base candidate contents have
 been inserted immediately prior to the point."
   (let* ((candidate (or candidate-in candidate)) ;; auto-complete uses dynamic variables
          (name candidate) ;; clean string without the text properties
-         (is-callable (get-text-property 0 'is-callable candidate))
          (to-insert (get-text-property 0 'to-insert candidate))
          (type-info (get-text-property 0 'type-info candidate))
+         (is-callable (plist-get type-info :arrow-type))
          (name-start-point (- (point) (length name)))
          (is-scala (ensime-scala-file-p buffer-file-name))
 
@@ -262,8 +261,10 @@ been inserted immediately prior to the point."
 
     ;; Show an inline signature for callable completions.
     (`annotation
-     (concat (if (get-text-property 0 'is-callable arg) "" ": ")
-             (plist-get (get-text-property 0 'type-info arg) :full-name)))
+     (let* ((type-info (get-text-property 0 'type-info arg))
+            (is-callable (plist-get type-info :arrow-type)))
+       (concat (if is-callable "" ": ")
+               (plist-get type-info :full-name))))
 
     ;; Expand function formal parameters if we've completed a call.
     (`post-completion (ensime--yasnippet-complete-action arg))

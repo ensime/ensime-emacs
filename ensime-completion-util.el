@@ -65,12 +65,10 @@
   (mapcar
    (lambda (completion)
      (ensime-plist-bind
-      (type-info is-callable to-insert name)
+      (type-info to-insert name)
       completion
       (propertize name
-                  'symbol-name name
                   'type-info type-info
-                  'is-callable is-callable
                   'to-insert to-insert)))
    completions))
 

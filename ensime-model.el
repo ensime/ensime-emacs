@@ -27,17 +27,11 @@
 (defun ensime-search-sym-decl-as (sym)
   (plist-get sym :decl-as))
 
-(defun ensime-symbol-name (sym)
-  (plist-get sym :name))
-
 (defun ensime-symbol-decl-pos (sym)
   (plist-get sym :decl-pos))
 
 (defun ensime-symbol-type (sym)
   (plist-get sym :type))
-
-(defun ensime-symbol-is-callable (sym)
-  (plist-get sym :is-callable))
 
 (defun ensime-package-name (info)
   (plist-get info :name))
