@@ -214,6 +214,7 @@
     ["Go to stacktrace buffer" ensime-stacktrace-switch]
     ["Go to Scala REPL" ensime-inf-switch]
     ["Shutdown ENSIME server" ensime-shutdown]
+    ["Troubleshooting" ensime-troubleshooting]
     ))
 
 (define-minor-mode ensime-mode
@@ -461,6 +462,50 @@
 		 (t (format "%s" pending)))))))
 
 (provide 'ensime-mode)
+
+
+
+;;;;;; Troubleshooting
+
+
+(defun ensime-troubleshooting ()
+  "Information about emacs and ensime installation."
+  (interactive)
+  (let ((info (format
+               (concat "\n### READ THIS\n"
+                       "Have you read all the documentation at [Ensime Emacs](http://ensime.org/editors/emacs/)? Please do, we put a lot of effort into it.\n"
+                       "Most problems can be resolved easily by following a simple process, follow through our\n"
+                       "[Troubleshooting guide](http://ensime.org/editors/emacs/troubleshooting/) and share the debugging information below as a gist if you need to escalate.\n"
+                       "Do not paste this directly into the gitter chat room as it is very verbose.\n"
+                       "*****************\n"
+                       "\n## System Information - Ensime troubleshoot report\n\n"
+                       "- OS: `%s`\n"
+                       "- Emacs: `%s`\n"
+                       "- ensime-sbt-command: `%s`\n"
+                       "- debug-on-error: `%s`\n"
+                       "- exec-path: `%s`\n"
+                       "- Backtrace:\n```\n%s\n```\n"
+                       "- .ensime file content:\n```\n%s\n```\n")
+               system-type
+               emacs-version
+               (bound-and-true-p ensime-sbt-command)
+               (bound-and-true-p debug-on-error)
+               exec-path
+               (if (get-buffer "*Backtrace*")
+                   (with-current-buffer "*Backtrace*"
+                     (buffer-substring-no-properties
+                      (point-min) (min (point-max) 1000)))
+                 "Backtrace not available or not found")
+               (if (y-or-n-p "Do you want to include .ensime file content? (if yes please choose .ensime file)")
+                   (progn
+                     (let ((filePath (read-file-name "Enter .ensime file path:")))
+                       (with-temp-buffer
+                         (insert-file-contents filePath)
+                         (buffer-string))))
+                 (progn "Not provided")))))
+    (with-output-to-temp-buffer "*ensime-troubleshooting*"
+      (switch-to-buffer "*ensime-troubleshooting*")
+      (insert info))))
 
 ;; Local Variables:
 ;; End:
