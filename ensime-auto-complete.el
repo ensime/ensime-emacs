@@ -265,12 +265,12 @@ be used later to give contextual help when entering arguments."
     (let* ((prefix (ensime-completion-prefix-at-point))
            (start (- (point) (length prefix)))
            (end (point))
-           (type-info (get-text-property 0 'type-info m))
-           (is-callable (plist-get type-info :arrow-type))
            (props '(:annotation-function
                     (lambda (m)
-                      (when is-callable
-                        (plist-get (get-text-property 0 'type-info m) :full-name)))
+                      (let* ((type-info (get-text-property 0 'type-info m))
+                             (is-callable (plist-get type-info :arrow-type)))
+                        (when is-callable
+                          (plist-get (get-text-property 0 'type-info m) :full-name))))
                     :exit-function
                     (lambda (m status)
                       (when (eq status 'finished)
