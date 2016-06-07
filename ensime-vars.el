@@ -171,7 +171,7 @@ used it must be installed separately."
 
   "Configures the default behavior of the \"go to test/implementation\"
 feature. Behavior can also be defined on a per-project basis. See
-`ensime-goto-test-config'.
+`ensime-goto-test-configs'.
 
 The value must be a plist with the following keys/values
 
