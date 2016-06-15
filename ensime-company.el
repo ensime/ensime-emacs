@@ -264,7 +264,7 @@ been inserted immediately prior to the point."
      (let* ((type-info (get-text-property 0 'type-info arg))
             (is-callable (plist-get type-info :arrow-type)))
        (concat (if is-callable "" ": ")
-               (plist-get type-info :full-name))))
+               (plist-get type-info :name))))
 
     ;; Expand function formal parameters if we've completed a call.
     (`post-completion (ensime--yasnippet-complete-action arg))
