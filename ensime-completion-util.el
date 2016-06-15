@@ -64,14 +64,13 @@
  being passed through the innards of auto-complete or company."
   (mapcar
    (lambda (completion)
-     (ensime-plist-bind
-      (type-info to-insert name)
-      completion
-      (propertize name
-                  'type-info type-info
-                  'to-insert to-insert)))
-   completions))
-
+     (let* ((name (plist-get completion :name))
+            (type-info (plist-get completion :type-info))
+            (to-insert (plist-get completion :to-insert)))
+       (propertize name
+                   'type-info type-info
+                   'to-insert to-insert
+                   ))) completions))
 
 (defun ensime-completion-prefix-at-point ()
   "Returns the prefix to complete."
