@@ -54,23 +54,22 @@ block notation for the final parameter."
              (let* ((type-info (cadar params))
                     (block-params (plist-get (car (plist-get type-info :param-sections)) :params))
                     (result-type (plist-get type-info :result-type)))
-               (if (ensime-type-is-by-name-p type-info) " { $0 }"
-                 (concat
-                  " { "
-                  (let ((param-list
-                         (mapconcat
-                          (lambda (name-and-type)
-                            (cl-destructuring-bind (name type) name-and-type
-                              (let ((param-name (ensime--yasnippet-escape name))
-                                    (type-name (ensime--yasnippet-escape (plist-get type :name))))
-                                (format "${%s:%s: %s}" (incf tab-stop) param-name type-name))))
-                          block-params
-                          ", ")))
-                    (if (> (length block-params) 1)
-                        (format "(%s)" param-list) param-list))
-                  (let ((result-type-name (ensime--yasnippet-escape
-                                           (plist-get result-type :name))))
-                    (format " => ${%s:%s} }$0" (incf tab-stop) result-type-name)))))
+               (concat
+                " { "
+                (let ((param-list
+                       (mapconcat
+                        (lambda (name-and-type)
+                          (cl-destructuring-bind (name type) name-and-type
+                            (let ((param-name (ensime--yasnippet-escape name))
+                                  (type-name (ensime--yasnippet-escape (plist-get type :name))))
+                              (format "${%s:%s: %s}" (incf tab-stop) param-name type-name))))
+                        block-params
+                        ", ")))
+                  (if (> (length block-params) 1)
+                      (format "(%s)" param-list) param-list))
+                (let ((result-type-name (ensime--yasnippet-escape
+                                         (plist-get result-type :name))))
+                  (format " => ${%s:%s} }$0" (incf tab-stop) result-type-name))))
 
            ;; Otherwise build template for a standard parameter list.
            (concat (if infix " " "(")
