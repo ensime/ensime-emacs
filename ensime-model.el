@@ -71,9 +71,9 @@
   (plist-get type :name))
 
 (defun ensime-type-is-by-name-p (type)
-  ;; this should be redundant... the server should report these as arrow types
-  ;; https://github.com/ensime/ensime-server/issues/1477
-  (string-match "^scala.<byname>" (plist-get type :full-name)))
+  ;; These two patterns should match both the old representation of by-name parameters
+  ;; from ensime and the new (standard) representation
+  (string-match "\\(^scala.<byname>\\|^=>\s+\\)" (plist-get type :full-name)))
 
 (defun ensime-declared-as (obj)
   (plist-get obj :decl-as))
