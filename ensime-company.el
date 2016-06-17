@@ -66,8 +66,9 @@ block notation for the final parameter."
                                 (format "${%s:%s: %s}" (incf tab-stop) param-name type-name))))
                           block-params
                           ", ")))
-                    (if (> (length block-params) 1)
-                        (format "(%s)" param-list) param-list))
+                    (cond ((> (length block-params) 1) (format "(%s)" param-list)) ;; (Int, String) => ...
+                          ((= (length block-params) 1) param-list) ;; Int => ...
+                          ((= (length block-params) 0) "()"))) ;; () => ...
                   (let ((result-type-name (ensime--yasnippet-escape
                                            (plist-get result-type :name))))
                     (format " => ${%s:%s} }$0" (incf tab-stop) result-type-name)))))
