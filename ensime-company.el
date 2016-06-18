@@ -246,7 +246,7 @@ been inserted immediately prior to the point."
      ;; Just ignore if there's no connection.
      (when (and (ensime-connected-p) (ensime-analyzer-ready))
        (let ((max-results 1000000)  ;; We want *all* candidates.
-	     (case-sense nil))
+             (case-sense ensime-company-case-sensitive))
 	 `(:async . (lambda (callback)
 		      (ensime-get-completions-async
 		       ,max-results ,case-sense callback))))))
