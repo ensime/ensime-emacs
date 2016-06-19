@@ -144,14 +144,13 @@ again."
                                       (?q "test-[q]uick" "testQuick"))))
     (concat module "/" source-set task)))
 
-(defun ensime-sbt-find-subproject (file-name source-set)
-  (when source-set
-    (let* ((config (-> (ensime-connection) ensime-config))
-           (subprojects (plist-get config :subprojects))
-           (matches-subproject-dir? (lambda (dir) (string-match-p dir file-name)))
-           (find-subproject (lambda (sp)
-                              (-any matches-subproject-dir? (plist-get sp :source-roots)))))
-      (-> (-find find-subproject subprojects) (plist-get :name)))))
+(defun ensime-sbt-find-subproject (file-name)
+  (let* ((config (-> (ensime-connection) ensime-config))
+         (subprojects (plist-get config :subprojects))
+         (matches-subproject-dir? (lambda (dir) (string-match-p dir file-name)))
+         (find-subproject (lambda (sp)
+                            (-any matches-subproject-dir? (plist-get sp :source-roots)))))
+    (-> (-find find-subproject subprojects) (plist-get :name))))
 
 (defun ensime-sbt-test-dwim (command)
   (let* ((file-name (or buffer-file-name default-directory))
@@ -160,7 +159,7 @@ again."
                       ((string-match-p "src/it" file-name) "it:")
                       ((string-match-p "src/fun" file-name) "fun:"))))
     (if source-set
-        (-> (ensime-sbt-find-subproject file-name source-set)
+        (-> (ensime-sbt-find-subproject file-name)
             (concat "/" source-set command)
             sbt-command)
       (-> (ensime-sbt-prompt-for-test) sbt-command))))
