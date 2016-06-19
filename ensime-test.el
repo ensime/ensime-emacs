@@ -1949,6 +1949,48 @@
 	       (f (cdr tests)))
 	  (apply f)
 	  (ensime-assert-equal (sbt:get-previous-command) command)))
+      (ensime-test-cleanup proj))))
+
+   (ensime-async-test
+    "Ensime integration test compile-only."
+    (let* ((proj (ensime-create-tmp-project
+                  `((:name
+                     "apackage/Example.scala"
+                     :relative-to "src/main/scala"
+                     :contents ,(ensime-test-concat-lines
+                                 "package apackage"
+                                 "object Example {"
+                                 "  def foo = println(\"foo\")"
+                                 "}"))
+                    (:name "build.sbt"
+                           :relative-to ""
+                           :contents ,(ensime-test-concat-lines
+                                       (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+                                       (concat "scalaBinaryVersion := \"" (ensime--scala-binary-version ensime--test-scala-version) "\"")
+                                       ""
+                                       "lazy val root ="
+                                       "  Project(\"root\", file(\".\"))"
+                                       )))
+                  nil "root" '("src/main/scala")))
+           (src-files (plist-get proj :src-files)))
+      (assert ensime-sbt-command)
+      (ensime-test-init-proj proj))
+
+    ((:connected))
+    ((:compiler-ready :full-typecheck-finished :indexer-ready)
+     (ensime-test-with-proj
+      (proj src-files)
+      (dolist
+          (tests '(("ensimeCompileOnly" ensime-sbt-do-compile-only)
+                   ))
+        (let* ((module (-> (plist-get proj :config)
+                           (plist-get :subprojects)
+                           -first-item
+                           (plist-get :name)))
+               (command (s-concat module "/" (car tests) " " buffer-file-name))
+               (f (cdr tests)))
+          (apply f)
+          (ensime-assert-equal (sbt:get-previous-command) command)))
       (ensime-test-cleanup proj))))))
 
 (defun ensime-run-all-tests ()

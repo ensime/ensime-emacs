@@ -53,6 +53,13 @@
   (interactive)
   (sbt-command "test:compile"))
 
+(defun ensime-sbt-do-compile-only ()
+  (interactive)
+  (let ((subproject (ensime-sbt-find-subproject buffer-file-name)))
+    (if subproject
+        (sbt-command (concat subproject "/ensimeCompileOnly " buffer-file-name))
+      (sbt-command (concat "ensimeCompileOnly " buffer-file-name)))))
+
 (defun ensime-sbt-do-run ()
   (interactive)
   (sbt-command "run"))

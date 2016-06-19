@@ -60,6 +60,7 @@
       (define-key prefix-map (kbd "C-b s") 'ensime-sbt-switch)
       (define-key prefix-map (kbd "C-b S") 'ensime-stacktrace-switch)
       (define-key prefix-map (kbd "C-b c") 'ensime-sbt-do-compile)
+      (define-key prefix-map (kbd "C-b C") 'ensime-sbt-do-compile-only)
       (define-key prefix-map (kbd "C-b n") 'ensime-sbt-do-clean)
       (define-key prefix-map (kbd "C-b E") 'ensime-sbt-do-ensime-config)
       (define-key prefix-map (kbd "C-b o") 'ensime-sbt-do-test-only-dwim)
@@ -188,6 +189,7 @@
     ("SBT"
      ["Start or switch to" ensime-sbt-switch]
      ["Compile" ensime-sbt-do-compile]
+     ["Compile only" ensime-sbt-do-compile-only]
      ["Clean" ensime-sbt-do-clean]
      ["Test" ensime-sbt-do-test]
      ["Test Quick" ensime-sbt-do-test-quick]
