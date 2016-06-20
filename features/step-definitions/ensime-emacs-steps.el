@@ -39,3 +39,13 @@
             (When (format "I go to line %S" line))
             (And (format "I go to the end of the line"))
             (Then (format "I should have completion prefix %S" prefix)))))) 
+
+(Given "^I got a search result for \"\\(.+\\)\" in file \"\\(.+\\)\" in line \"\\([0-9]+\\)\"$"
+     (lambda (class file linenumber)
+       (let ((line (string-to-int linenumber)))
+         (setq ensime-helm-test-search-result (ensime-helm--format-search-elemen `(:type "type" :name ,class :local-name ,class :decl-as "class" :pos (:type line :file ,file :line ,line)))))))
+
+(Then "^the formatted result should match$"
+     (lambda (formatted-result)
+          (assert (equal ensime-helm-test-search-result formatted-result) nil
+                  (format "Expected formated result \"%s\", but was \"%s\"" formatted-result ensime-helm-test-search-result))))

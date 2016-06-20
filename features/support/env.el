@@ -12,6 +12,7 @@
 (add-to-list 'load-path ensime-emacs-root-path)
 
 (require 'ensime)
+(require 'ensime-helm)
 (require 'espuds)
 (require 'scala-mode)
 (require 'ert)

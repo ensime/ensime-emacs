@@ -29,6 +29,7 @@
 (development
  ;; optional dependencies (used in the tests)
  (depends-on "auto-complete")
+ (depends-on "helm")
  ;;(depends-on "expand-region")
  (depends-on "f")
  (depends-on "ert-runner")
