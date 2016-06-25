@@ -25,10 +25,8 @@
 (defvar ensime--debug-messages nil
   "When true, show debugging information in the echo area")
 
-
-(defvar user-emacs-ensime-directory "ensime"
-  "The directory to store the calculated classpaths for the ensime server
-  when running `ensime-update' or starting a server for the first time.")
+(defvar ensime-startup-dirname (expand-file-name "ensime" user-emacs-directory)
+  "Directory where the classfile or assembly jars are stored.")
 
 (defconst ensime--sbt-start-template
 "
@@ -85,8 +83,8 @@ saveClasspathTask := {
     (let* ((config-file (ensime-config-find orig-buffer-file-name))
            (config (ensime-config-load config-file))
            (scala-version (plist-get config :scala-version))
-           (assembly-file (ensime--assembly-file scala-version))
-           (classpath-file (ensime--classpath-file scala-version)))
+           (assembly-file (ensime-startup-assembly-filename scala-version))
+           (classpath-file (ensime-startup-classpath-filename scala-version)))
       (if (and (not (file-exists-p assembly-file))
                (ensime--classfile-needs-refresh-p classpath-file))
           (ensime--update-server scala-version `(lambda () (ensime--1 ,config-file)))
@@ -167,22 +165,19 @@ Analyzer will be restarted."
     (if existing existing
       (ensime--start-server buffer java-home scala-version flags env config-file cache-dir))))
 
-(defun ensime--user-directory ()
-  (file-name-as-directory
-   (expand-file-name user-emacs-ensime-directory user-emacs-directory)))
-
-(defun ensime--assembly-file (scala-version)
-  "The expected location of a manually produced assembly file.
-If such a file is present, it will override the `ensime--classpath-file' and
-the ensime server will not be automatically updated."
+(defun ensime-startup-assembly-filename (scala-version)
+  "The filename of an assembly jar for SCALA-VERSION.
+If such a file is present, it will override the `ensime-startup-classpath-filename'.
+Assembly jars are available at http://ensime.typelevel.org"
   (expand-file-name
    (format "ensime_%s-%s-assembly.jar" (ensime--scala-binary-version scala-version) ensime-server-version)
-   (ensime--user-directory)))
+   ensime-startup-dirname))
 
-(defun ensime--classpath-file (scala-version)
+(defun ensime-startup-classpath-filename (scala-version)
+  "The filename containing the ensime-server classpath for SCALA-VERSION."
   (expand-file-name
    (format "classpath_%s_%s" scala-version ensime-server-version)
-   (ensime--user-directory)))
+   ensime-startup-dirname))
 
 (defun ensime--classfile-needs-refresh-p (classfile)
   "Do we need to update the CLASSFILE?"
@@ -196,7 +191,7 @@ the ensime server will not be automatically updated."
 (defun ensime--update-sentinel (process event scala-version on-success-fn)
   (cond
    ((equal event "finished\n")
-    (let ((classpath-file (ensime--classpath-file scala-version)))
+    (let ((classpath-file (ensime-startup-classpath-filename scala-version)))
       (if (file-exists-p classpath-file)
           (funcall on-success-fn)
         (message "Could not create classpath file %s" classpath-file))))
@@ -208,7 +203,7 @@ the ensime server will not be automatically updated."
     (erase-buffer)
     (let* ((default-directory (file-name-as-directory
                                (make-temp-file "ensime_update_" t)))
-           (classpath-file (ensime--classpath-file scala-version))
+           (classpath-file (ensime-startup-classpath-filename scala-version))
            (buildfile (expand-file-name "build.sbt"))
            (buildcontents (ensime--create-sbt-start-script scala-version))
            (buildpropsfile (expand-file-name "project/build.properties")))
@@ -250,8 +245,8 @@ CACHE-DIR is the server's persistent output directory."
     (comint-mode)
     (let* ((default-directory cache-dir)
            (tools-jar (expand-file-name "lib/tools.jar" java-home))
-           (assembly-file (ensime--assembly-file scala-version))
-           (classpath-file (ensime--classpath-file scala-version))
+           (assembly-file (ensime-startup-assembly-filename scala-version))
+           (classpath-file (ensime-startup-classpath-filename scala-version))
            (scala-compiler-jars (plist-get config :scala-compiler-jars))
            (server-classpath (if (file-exists-p assembly-file)
                                  (cons assembly-file scala-compiler-jars)
@@ -315,7 +310,7 @@ CACHE-DIR is the server's persistent output directory."
   (s-replace-all (list (cons "_scala_version_" scala-version)
                        (cons "_scala_binary_version_" (ensime--scala-binary-version scala-version))
                        (cons "_server_version_" ensime-server-version)
-                       (cons "_classpath_file_" (ensime--classpath-file scala-version)))
+                       (cons "_classpath_file_" (ensime-startup-classpath-filename scala-version)))
                  ensime--sbt-start-template))
 
 

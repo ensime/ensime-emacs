@@ -184,7 +184,7 @@ the current project's dependencies. Returns list of form (cmd [arg]*)"
                                       (plist-get config :scala-compiler-jars)
                                     (split-string
                                      (ensime-read-from-file
-                                      (ensime--classpath-file (plist-get config :scala-version)))
+                                      (ensime-startup-classpath-filename (plist-get config :scala-version)))
                                      ensime--classpath-separator t))))))
     (if config
         (list

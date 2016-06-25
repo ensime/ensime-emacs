@@ -63,7 +63,7 @@
 (defun ensime--extract-scala-library-jar ()
   (with-temp-buffer
     (insert-file-contents
-     (ensime--classpath-file ensime--test-scala-version))
+     (ensime-startup-classpath-filename ensime--test-scala-version))
     (--first
      (string-match "[/\\]scala-library.*\\.jar$" it )
      (split-string (buffer-string) ensime--classpath-separator 'omit-nulls))))

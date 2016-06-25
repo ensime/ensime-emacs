@@ -235,7 +235,7 @@
                           (:targets ("i") :compile-deps ("j" "k") :runtime-deps ("l" "m"))))))
    (unwind-protect
        (progn
-         (ensime-write-to-file (ensime--classpath-file "test-inf-repl-config")
+         (ensime-write-to-file (ensime-startup-classpath-filename "test-inf-repl-config")
                                (mapconcat #'identity
                                           '("/x/y/scala-compiler-2.11.5.jar"
                                             "/x/y/something-else-1.2.jar"
@@ -247,7 +247,7 @@
                                 :classpath ,(ensime--build-classpath
                                              '("/x/y/scala-compiler-2.11.5.jar" "/x/y/scala-reflect-2.11.5.jar"
                                                "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m"))))))
-     (delete-file (ensime--classpath-file "test-inf-repl-config"))))) 
+     (delete-file (ensime-startup-classpath-filename "test-inf-repl-config")))))
 
 (ert-deftest support-scala-versions ()
   (should (equal (ensime--scala-binary-version "2.10.6")
