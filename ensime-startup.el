@@ -181,12 +181,13 @@ Assembly jars are available at http://ensime.typelevel.org"
 
 (defun ensime--classfile-needs-refresh-p (classfile)
   "Do we need to update the CLASSFILE?"
-  (when (s-contains? "SNAPSHOT" ensime-server-version)
-    (let ((ensime-el (locate-file "ensime" load-path '(".el" ".elc"))))
-      (when ensime-el
-        (ensime--dependencies-newer-than-target-p
-         classfile
-         (directory-files (file-name-directory ensime-el) t "^ensime.*\\.elc?$"))))))
+  (or (not (file-exists-p classfile))
+      (when (s-contains? "SNAPSHOT" ensime-server-version)
+        (let ((ensime-el (locate-file "ensime" load-path '(".el" ".elc"))))
+          (when ensime-el
+            (ensime--dependencies-newer-than-target-p
+             classfile
+             (directory-files (file-name-directory ensime-el) t "^ensime.*\\.elc?$")))))))
 
 (defun ensime--update-sentinel (process event scala-version on-success-fn)
   (cond
