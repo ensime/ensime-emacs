@@ -223,7 +223,7 @@ been inserted immediately prior to the point."
                    (equal
                     ?\{
                     (or force-block
-                        (read-char-choice "{ or (" '(?\{ ?\())))))
+                        (save-excursion (read-char-choice "{ or (" '(?\{ ?\()))))))
              (snippet
               (ensime--build-yasnippet-for-call
                param-sections
