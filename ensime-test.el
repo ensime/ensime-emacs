@@ -110,7 +110,7 @@
 			      :name "test"
 			      :scala-version ,ensime--test-scala-version
 			      :java-home ,(getenv "JAVA_HOME")
-			      :java-flags ("-Xmx1g" "-Xss2m" "-XX:MaxPermSize=128m" "-XX:MaxDirectMemorySize=4096mb")
+			      :java-flags ,(append (getenv "ENSIME_JVM_TEST_FLAGS") '("-Xmx1g" "-Xss2m" "-XX:MaxPermSize=128m"))
 			      :subprojects ((:name ,sp-name
 						   :module-name ,sp-name
 						   :source-roots (,src-dir ,unit-test-dir ,int-test-dir)
