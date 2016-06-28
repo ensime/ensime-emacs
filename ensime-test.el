@@ -103,24 +103,28 @@
 	 (sp-name (if subproject-name
 		      subproject-name
 		    (downcase (file-name-nondirectory root-dir))))
-         (config (append
-                  extra-config
-                  `(:root-dir ,root-dir
-			      :cache-dir ,cache-dir
-			      :name "test"
-			      :scala-version ,ensime--test-scala-version
-			      :java-home ,(getenv "JAVA_HOME")
-			      :java-flags ,(append (getenv "ENSIME_JVM_TEST_FLAGS") '("-Xmx1g" "-Xss2m" "-XX:MaxPermSize=128m"))
-			      :subprojects ((:name ,sp-name
-						   :module-name ,sp-name
-						   :source-roots (,src-dir ,unit-test-dir ,int-test-dir)
-						   :depends-on-modules nil
-						   :compile-deps (,scala-jar)
-						   :targets (,target-dir)
-						   :test-targets (,test-target-dir))))))
-         (conf-file (ensime-create-file
-                     (expand-file-name ".ensime" root-dir)
-                     (format "%S" config))))
+         (config (let ((env (getenv "ENSIME_JVM_TEST_FLAGS"))
+                       (default-flags '("-Xmx1g" "-Xss2m" "-XX:MaxPermSize=128m")))
+                   (append
+                    extra-config
+                    `(:root-dir ,root-dir
+                                :cache-dir ,cache-dir
+                                :name "test"
+                                :scala-version ,ensime--test-scala-version
+                                :java-home ,(getenv "JAVA_HOME")
+                                :java-flags , (if env
+                                                  (cons env default-flags)
+                                                default-flags)
+                                :subprojects ((:name ,sp-name
+                                                     :module-name ,sp-name
+                                                     :source-roots (,src-dir ,unit-test-dir ,int-test-dir)
+                                                     :depends-on-modules nil
+                                                     :compile-deps (,scala-jar)
+                                                     :targets (,target-dir)
+                                                     :test-targets (,test-target-dir)))))))
+                 (conf-file (ensime-create-file
+                             (expand-file-name ".ensime" root-dir)
+                             (format "%S" config))))
 
     (mkdir src-dir t)
     (mkdir unit-test-dir t)
