@@ -320,7 +320,7 @@ Goes to the point of the definition (returning point), or fails with `nil'."
 	 (file-visible-window (ensime-window-showing-file file)))
 
     (when (not file-visible-window)
-      (ensime-find-file-from-pos pos where)
+      (ensime-find-file-from-pos pos (eq where 'window) (eq where 'frame))
       (setq file-visible-window
 	    (ensime-window-showing-file file)))
 
@@ -334,7 +334,7 @@ Goes to the point of the definition (returning point), or fails with `nil'."
 	(goto-char pt)
         (set-window-point file-visible-window pt)))))
 
-(defun ensime-find-file-from-pos (pos other-window-p)
+(defun ensime-find-file-from-pos (pos other-window-p other-frame-p)
   (let* ((archive (ensime-pos-archive pos))
          (entry (ensime-pos-file pos))
          (effective-file (ensime-pos-effective-file pos))
@@ -352,9 +352,9 @@ Goes to the point of the definition (returning point), or fails with `nil'."
           (let ((backup-inhibited t))
             (write-file effective-file)))))
 
-    (if other-window-p
-        (find-file-other-window effective-file)
-      (find-file effective-file))
+    (cond (other-window-p (find-file-other-window effective-file))
+	  (other-frame-p (find-file-other-frame effective-file))
+	  (t (find-file effective-file)))
 
     (let* ((config (ensime-config-for-buffer))
            (dep-src-dir (ensime-source-jars-dir config)))
