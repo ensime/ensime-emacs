@@ -63,7 +63,7 @@ edition of ENSIME:
 2. remember to upgrade both the emacs and server components
    regularly as they can get out of sync with each other. Do not
    forget to follow the process outlined in
-   http://ensime.github.io/editors/emacs/troubleshooting/
+   http://ensime.org/editors/emacs/troubleshooting/
 
 Please get involved in the development of ensime and help to
 create high quality reproductions of bugs.
