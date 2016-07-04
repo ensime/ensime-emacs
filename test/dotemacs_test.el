@@ -4,8 +4,12 @@
       ensime--debug-messages nil ;; change to `t' for debug info
       ensime-typecheck-when-idle nil
       company-backends nil
+      ensime-startup-snapshot-notification nil
       user-emacs-directory (expand-file-name
                             (concat ".cask/" emacs-version)))
+
+;; disables the welcome message
+(mkdir (expand-file-name "ensime" user-emacs-directory) 'parents)
 
 ;; can be useful when debugging the test framework
 ;; (add-hook 'kill-emacs-hook (lambda() (backtrace)))

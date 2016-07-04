@@ -28,6 +28,82 @@
 (defvar ensime-startup-dirname (expand-file-name "ensime" user-emacs-directory)
   "Directory where the classfile or assembly jars are stored.")
 
+(defvar ensime-startup-snapshot-notification t
+  "Show a warning about using rolling release.
+It is important that users know what they are getting into.")
+
+(defun ensime-startup-notifications ()
+  "Invasive informational messages that users need to be aware of."
+
+  (when (and ensime-startup-snapshot-notification
+             (s-contains? "SNAPSHOT" ensime-server-version))
+    (let ((developer (generate-new-buffer "*ENSIME Developer Edition*")))
+      (with-current-buffer developer
+        (insert
+         "You are tracking a SNAPSHOT version of ensime-server.
+If you did not intentionally do this, it means that you are using
+the unstable (developer) release of ensime (e.g. from MELPA),
+which is *not recommended*.
+
+To install the stable release of ensime, delete
+~/.emacs.d/elpa/ensime and follow the instructions at:
+
+* http://ensime.org/editors/emacs/install/
+
+
+If, however, you are happy to continue tracking the developer
+edition of ENSIME:
+
+1. you are expected to remain up-to-date with developments. You
+   will get access to new features but regressions in existing
+   features will happen from time to time (typically while we
+   await a volunteer to make required changes to the emacs
+   plugin, please help by getting involved!).
+
+2. remember to upgrade both the emacs and server components
+   regularly as they can get out of sync with each other. Do not
+   forget to follow the process outlined in
+   http://ensime.github.io/editors/emacs/troubleshooting/
+
+Please get involved in the development of ensime and help to
+create high quality reproductions of bugs.
+
+You can disable this message permanently by setting
+`ensime-startup-snapshot-notification' to `nil', acknowledging
+that you have read this message.")
+        (read-only-mode t)
+        (display-buffer developer #'display-buffer-pop-up-window))))
+
+  ;; welcome is more important, make sure it wins the popup race
+  (unless (file-exists-p ensime-startup-dirname)
+    (let ((welcome (generate-new-buffer "*ENSIME Welcome*")))
+      (with-current-buffer welcome
+        (insert "It looks like you've just installed ENSIME, welcome!
+
+ENSIME is more complex than a typical Emacs plugin and interacts
+with an external java application (which will be downloaded and
+started automatically).
+
+You are strongly recommended to read the documentation at
+
+* http://ensime.org/getting_started/
+* http://ensime.org/editors/emacs/
+* http://ensime.org/getting_help/
+
+before proceeding.
+
+We are all volunteers with our own priorities to improve ENSIME.
+Our approach to feature requests is that we will enthusiastically
+help you to implement or fix it. The ENSIME codebase is
+surprisingly easy to understand and you are invited to read the
+contributing guide and jump in: http://ensime.org/contributing/
+
+This notification will only appear if you do not have a directory
+at `ensime-startup-dirname'.")
+        (read-only-mode t)
+        (display-buffer welcome #'display-buffer-pop-up-window)))))
+
+
 (defconst ensime--sbt-start-template
 "
 import sbt._
@@ -73,22 +149,20 @@ saveClasspathTask := {
       (ensime--update-server scala-version `(lambda () (message "ENSIME server updated.")))))
 
 (defun ensime--maybe-update-and-start (orig-buffer-file-name &optional host port)
-  (if (and host port)
-      ;; When both host and port are provided, we assume we're connecting to
-      ;; an existing, listening server.
-      (let* ((config-file (ensime-config-find orig-buffer-file-name))
-	     (config (ensime-config-load config-file))
-	     (cache-dir (file-name-as-directory (ensime--get-cache-dir config))))
-	(ensime--retry-connect nil host (lambda () port) config cache-dir))
-    (let* ((config-file (ensime-config-find orig-buffer-file-name))
-           (config (ensime-config-load config-file))
-           (scala-version (plist-get config :scala-version))
-           (assembly-file (ensime-startup-assembly-filename scala-version))
-           (classpath-file (ensime-startup-classpath-filename scala-version)))
-      (if (and (not (file-exists-p assembly-file))
-               (ensime--classfile-needs-refresh-p classpath-file))
-          (ensime--update-server scala-version `(lambda () (ensime--1 ,config-file)))
-        (ensime--1 config-file)))))
+  (let* ((config-file (ensime-config-find orig-buffer-file-name))
+         (config (ensime-config-load config-file)))
+    (if (and host port)
+        ;; When both host and port are provided, we assume we're connecting to
+        ;; an existing, listening server.
+        (let ((cache-dir (file-name-as-directory (ensime--get-cache-dir config))))
+          (ensime--retry-connect nil host (lambda () port) config cache-dir))
+      (let* ((scala-version (plist-get config :scala-version))
+             (assembly-file (ensime-startup-assembly-filename scala-version))
+             (classpath-file (ensime-startup-classpath-filename scala-version)))
+        (if (and (not (file-exists-p assembly-file))
+                 (ensime--classfile-needs-refresh-p classpath-file))
+            (ensime--update-server scala-version `(lambda () (ensime--1 ,config-file)))
+          (ensime--1 config-file))))))
 
 (defun ensime--maybe-update-and-start-noninteractive (orig-buffer-file-name)
   (let ((ensime-prefer-noninteractive t))
@@ -217,7 +291,6 @@ Assembly jars are available at http://ensime.typelevel.org"
       (if (executable-find ensime-sbt-command)
           (let ((process (start-process "*ensime-update*" (current-buffer)
                                         ensime-sbt-command "saveClasspath" "clean")))
-            (display-buffer (current-buffer) nil)
             (set-process-sentinel process
                                   `(lambda (process event)
                                      (ensime--update-sentinel process

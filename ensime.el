@@ -78,6 +78,7 @@
 (defun ensime ()
   "Read config file for settings then start an ensime-server and connect."
   (interactive)
+  (ensime-startup-notifications)
   (let ((orig-bfn buffer-file-name))
     (condition-case ex
         (if ensime-auto-generate-config
