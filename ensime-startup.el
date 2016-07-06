@@ -71,6 +71,7 @@ create high quality reproductions of bugs.
 You can disable this message permanently by setting
 `ensime-startup-snapshot-notification' to `nil', acknowledging
 that you have read this message.")
+        (goto-char (point-min))
         (read-only-mode t)
         (display-buffer developer #'display-buffer-pop-up-window))))
 
@@ -100,6 +101,7 @@ contributing guide and jump in: http://ensime.org/contributing/
 
 This notification will only appear if you do not have a directory
 at `ensime-startup-dirname'.")
+        (goto-char (point-min))
         (read-only-mode t)
         (display-buffer welcome #'display-buffer-pop-up-window)))))
 
