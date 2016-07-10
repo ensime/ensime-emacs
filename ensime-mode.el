@@ -5,6 +5,7 @@
   (require 'ensime-macros))
 
 (require 's)
+(require 'scala-mode)
 
 (defvar ensime-source-buffer-saved-hook nil
   "Hook called whenever an ensime source buffer is saved.")
@@ -102,7 +103,8 @@
 
 ;;;;; ensime-mode
 (defun ensime-scala-mode-hook ()
-  "Conveniance hook function that just starts ensime-mode."
+  "Convenient hook function to start `ensime-mode'."
+  (scala-mode 1)
   (ensime-mode 1))
 
 (defun ensime-run-after-save-hooks ()

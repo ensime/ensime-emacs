@@ -36,6 +36,5 @@
 ;;(setq ensime-server-logback (concat ensime-test-dev-home "/test/logback.xml"))
 
 (message "Using ensime-test-dev-home of %s" ensime-test-dev-home)
-(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
 
 ;;; dotemacs_test.el ends here
