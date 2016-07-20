@@ -234,8 +234,13 @@ the current project's dependencies. Returns list of form (cmd [arg]*)"
   "Send current region to Scala interpreter."
   (interactive "r")
   (ensime-inf-assert-running)
-  (comint-send-region ensime-inf-buffer-name start end)
-  (comint-send-string ensime-inf-buffer-name "\n"))
+
+  (let ((reg (buffer-substring-no-properties start end)))
+    (with-current-buffer ensime-inf-buffer-name
+      (comint-send-string nil ":paste\n")
+      (comint-send-string nil reg)
+      (comint-send-string nil "\n")
+      (comint-send-eof))))
 
 (defun ensime-inf-eval-definition ()
   "Send the current 'definition' to the Scala interpreter.
