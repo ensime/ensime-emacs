@@ -81,10 +81,13 @@ or (if the point isn't inside a class definition) the class that follows
 the point. Return nil if no class can be found."
   ;; TODO use an RPC call instead of this cheesy search
   (cl-labels
-      ((pos-of-top-level-class (&optional last-try)
+      ((inside-string? () (nth 3 (syntax-ppss)))
+       (pos-of-top-level-class (&optional last-try)
          (save-excursion
            (save-restriction
              (widen)
+             (while (inside-string?)
+               (goto-char (1- (point))))
              (let ((top-level-sexp (point)))
                ;; Try to go up a sexp until we get an error
                (condition-case nil
