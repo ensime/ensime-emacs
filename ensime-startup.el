@@ -283,11 +283,13 @@ Assembly jars are available at http://ensime.typelevel.org"
            (classpath-file (ensime-startup-classpath-filename scala-version))
            (buildfile (expand-file-name "build.sbt"))
            (buildcontents (ensime--create-sbt-start-script scala-version))
+           (buildpluginsfile (expand-file-name "project/plugins.sbt"))
            (buildpropsfile (expand-file-name "project/build.properties")))
 
       (when (file-exists-p classpath-file) (delete-file classpath-file))
       (make-directory (file-name-directory classpath-file) t)
       (ensime-write-to-file buildfile buildcontents)
+      (ensime-write-to-file buildpluginsfile "addSbtPlugin(\"io.get-coursier\" % \"sbt-coursier\" % \"1.0.0-M13\")\n")
       (ensime-write-to-file buildpropsfile "sbt.version=0.13.11\n")
 
       (if (executable-find ensime-sbt-command)
