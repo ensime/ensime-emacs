@@ -40,20 +40,14 @@ It is important that users know what they are getting into.")
     (let ((developer (generate-new-buffer "*ENSIME Developer Edition*")))
       (with-current-buffer developer
         (insert
-         "You are tracking a SNAPSHOT version of ensime-server.
-If you did not intentionally do this, it means that you are using
-the unstable (developer) release of ensime (e.g. from MELPA),
-which is *not recommended*.
+         "You are tracking a SNAPSHOT version of ensime-server, i.e. you are
+using the unstable (developer) release of ensime (e.g. from MELPA). That's cool
+since "ENSIME appeals to hackers, minimalists and connoisseurs - engineers and
+artists who craft their own exquisite tools and help their neighbour".
+Please get involved in the development of ensime and help to create high quality
+reproductions of bugs.
 
-To install the stable release of ensime, delete
-~/.emacs.d/elpa/ensime and follow the instructions at:
-
-* http://ensime.org/editors/emacs/install/
-
-
-If, however, you are happy to continue tracking the developer
-edition of ENSIME:
-
+Please note:
 1. you are expected to remain up-to-date with developments. You
    will get access to new features but regressions in existing
    features will happen from time to time (typically while we
@@ -65,12 +59,14 @@ edition of ENSIME:
    forget to follow the process outlined in
    http://ensime.org/editors/emacs/troubleshooting/
 
-Please get involved in the development of ensime and help to
-create high quality reproductions of bugs.
-
 You can disable this message permanently by setting
 `ensime-startup-snapshot-notification' to `nil', acknowledging
-that you have read this message.")
+that you have read this message.
+
+If you want to install the stable release of ensime instead, delete
+~/.emacs.d/elpa/ensime and follow the instructions at:
+
+* http://ensime.org/editors/emacs/install/")
         (goto-char (point-min))
         (read-only-mode t)
         (display-buffer developer #'display-buffer-pop-up-window))))
