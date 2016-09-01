@@ -42,8 +42,8 @@ It is important that users know what they are getting into.")
         (insert
          "You are tracking a SNAPSHOT version of ensime-server, i.e. you are
 using the unstable (developer) release of ensime (e.g. from MELPA). That's cool
-since "ENSIME appeals to hackers, minimalists and connoisseurs - engineers and
-artists who craft their own exquisite tools and help their neighbour".
+since \"ENSIME appeals to hackers, minimalists and connoisseurs - engineers and
+artists who craft their own exquisite tools and help their neighbour\".
 Please get involved in the development of ensime and help to create high quality
 reproductions of bugs.
 
