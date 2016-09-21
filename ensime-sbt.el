@@ -163,6 +163,7 @@ again."
   (let* ((file-name (or buffer-file-name default-directory))
          (source-set (cond
                       ((string-match-p "src/test" file-name) "")
+                      ((string-match-p "/test" file-name) "") ;; for Play's default dir layout
                       ((string-match-p "src/it" file-name) "it:")
                       ((string-match-p "src/fun" file-name) "fun:"))))
     (if source-set
