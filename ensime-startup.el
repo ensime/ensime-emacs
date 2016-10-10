@@ -109,6 +109,7 @@ import IO._
 import java.io._
 
 scalaVersion := \"_scala_version_\"
+
 scalaBinaryVersion := \"_scala_binary_version_\"
 
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
