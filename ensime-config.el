@@ -29,8 +29,6 @@
 (defvar ensime-config-file-name ".ensime"
   "The default file name for ensime project configurations.")
 
-(add-to-list 'auto-mode-alist '("\\.ensime$" . emacs-lisp-mode))
-
 (defun ensime-config-for-buffer ()
   "Resolve the config for the current buffer via the ENSIME connection."
   (let ((connection (ensime-connection)))
@@ -150,22 +148,13 @@ NO-REF-SOURCES allows skipping the extracted dependencies."
               "See http://ensime.org/build_tools"))
       nil)))
 
-(defun ensime-config-load (file-name &optional force-dir)
-  "Load and parse a project config file. Return the resulting plist."
-  (let ((dir (expand-file-name (file-name-directory file-name)))
-	(source-path (or force-dir buffer-file-name default-directory)))
-    (save-excursion
-      (let ((config
-	     (let ((buf (find-file-read-only file-name ensime-config-file-name))
-		   (src (buffer-substring-no-properties
-			 (point-min) (point-max))))
-	       (kill-buffer buf)
-	       (condition-case error
-		   (read src)
-		 (error
-		  (error "Error reading configuration file, %s: %s" src error)
-		  )))))
-        config))))
+(defun ensime-config-load (file-name)
+  "Load, parse, and return FILE-NAME as a Lisp object."
+  (condition-case problem
+      (with-temp-buffer
+        (insert-file-contents file-name)
+        (read (current-buffer)))
+    (error (error "Error reading configuration file, %s: %s" file-name problem))))
 
 (defun ensime-source-roots-from-config ()
   "Return all source directories from all subprojects"
