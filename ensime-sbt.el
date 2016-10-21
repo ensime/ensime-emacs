@@ -16,6 +16,7 @@
   (require 'ensime-macros))
 
 (require 'sbt-mode)
+(require 'ensime-config)
 
 (defgroup ensime-sbt nil
   "Support for sbt build REPL."
@@ -54,8 +55,10 @@
   (sbt-command "test:compile"))
 
 (defun ensime-sbt-do-compile-only ()
+  "Save the current buffer and compile it using `sbt-ensime's `ensimeCompileOnly' Task."
   (interactive)
-  (let ((subproject (ensime-sbt-find-subproject buffer-file-name)))
+  (save-buffer)
+  (let* ((subproject (ensime-subproject-for-config)))
     (if subproject
         (sbt-command (concat subproject "/ensimeCompileOnly " buffer-file-name))
       (sbt-command (concat "ensimeCompileOnly " buffer-file-name)))))
@@ -151,14 +154,6 @@ again."
                                       (?q "test-[q]uick" "testQuick"))))
     (concat module "/" source-set task)))
 
-(defun ensime-sbt-find-subproject (file-name)
-  (let* ((config (-> (ensime-connection) ensime-config))
-         (subprojects (plist-get config :subprojects))
-         (matches-subproject-dir? (lambda (dir) (string-match-p dir file-name)))
-         (find-subproject (lambda (sp)
-                            (-any matches-subproject-dir? (plist-get sp :source-roots)))))
-    (-> (-find find-subproject subprojects) (plist-get :name))))
-
 (defun ensime-sbt-test-dwim (command)
   (let* ((file-name (or buffer-file-name default-directory))
          (source-set (cond
@@ -167,7 +162,7 @@ again."
                       ((string-match-p "src/it" file-name) "it:")
                       ((string-match-p "src/fun" file-name) "fun:"))))
     (if source-set
-        (-> (ensime-sbt-find-subproject file-name)
+        (-> (ensime-subproject-for-config)
             (concat "/" source-set command)
             sbt-command)
       (-> (ensime-sbt-prompt-for-test) sbt-command))))

@@ -34,12 +34,27 @@
   (let ((connection (ensime-connection)))
     (ensime-config connection)))
 
-(defun ensime-process-for-config (config)
-  "Obtain the ENSIME Server process for the given config."
+(defun ensime-process-for-config (&optional config)
+  "Obtain the ENSIME Server process for the given CONFIG (auto discovered if NIL)."
   ;; this is a bit of a hack, we should always have ready access to this
-  (-first (lambda (p) (eq config (process-get p :ensime-config)))
-          ensime-server-processes))
+  (let ((config (or config (ensime-config-for-buffer))))
+   (-first (lambda (p) (eq config (process-get p :ensime-config)))
+           ensime-server-processes)))
 
+(defun ensime-subproject-for-config (&optional config)
+  "Obtain the subproject for the current buffer for the given CONFIG (auto discovered if NIL)."
+  ;; this is a good candidate for caching
+  (let ((config (or config (ensime-config-for-buffer))))
+   (let* ((case-insensitive-fs t) ;; https://github.com/ensime/ensime-emacs/issues/532
+          (canonical (convert-standard-filename buffer-file-name))
+          (subprojects (plist-get config :subprojects))
+          (matches-subproject-dir? (lambda (dir) (s-starts-with-p dir canonical case-insensitive-fs)))
+          (find-subproject (lambda (sp)
+                             (-any matches-subproject-dir? (plist-get sp :source-roots)))))
+     (-> (-find find-subproject subprojects) (plist-get :name)))))
+
+
+;; DEPRECATED: these getters should be replaced with a function that takes the key
 (defun ensime--get-cache-dir (config)
   (let ((cache-dir (plist-get config :cache-dir)))
     (unless cache-dir
@@ -241,3 +256,5 @@ project directories, because neither does ensime-sbt.)"
 
 ;; Local Variables:
 ;; End:
+;;
+;;; ensime-config.el ends here
