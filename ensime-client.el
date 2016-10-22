@@ -949,13 +949,6 @@ copies. All other objects are used unchanged. List must not contain cycles."
 (defun ensime-rpc-async-typecheck-all (continue)
   (ensime-eval-async `(swank:typecheck-all) continue))
 
-(defun ensime-rpc-async-format-files (file-names continue)
-  (ensime-eval-async `(swank:format-source ,file-names) continue))
-
-(defun ensime-rpc-format-buffer ()
-  (ensime-eval `(swank:format-one-source (:file ,buffer-file-name
-                                          :contents ,(ensime-get-buffer-as-string)))))
-
 (defun ensime-rpc-expand-selection (file-name start end)
   (ensime-internalize-offset-fields
    (ensime-eval `(swank:expand-selection

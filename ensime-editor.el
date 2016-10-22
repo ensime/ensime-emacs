@@ -730,21 +730,6 @@ Decide what line to insert QUALIFIED-NAME."
 	      (ensime-insert-import qual-name)
 	      (ensime-typecheck-current-buffer))))))))
 
-;; Source Formatting
-
-(defun ensime-format-source ()
-  "Format the source in the current buffer using the Scalariform
- formatting library."
-  (interactive)
-  (let ((formatted (ensime-rpc-format-buffer)))
-    (when formatted
-      (when (eq 1 (coding-system-eol-type buffer-file-coding-system))
-        (setq formatted (replace-regexp-in-string "\r$" "" formatted)))
-      (let ((pt (point)))
-        (erase-buffer)
-        (insert formatted)
-        (goto-char pt)))))
-
 (defun ensime-revert-visited-files (files &optional typecheck)
   "files is a list of buffer-file-names to revert or lists of the form
  (visited-file-name disk-file-name) where buffer visiting visited-file-name

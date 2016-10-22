@@ -58,10 +58,20 @@
   "Save the current buffer and compile it using `sbt-ensime's `ensimeCompileOnly' Task."
   (interactive)
   (save-buffer)
-  (let* ((subproject (ensime-subproject-for-config)))
+  (ensime-sbt-run-command-in-subproject "ensimeCompileOnly" buffer-file-name))
+
+(defun ensime-sbt-do-scalariform-only ()
+  "Format the current file using Scalariform."
+  (interactive)
+  (save-buffer)
+  (ensime-sbt-run-command-in-subproject "ensimeScalariformOnly" buffer-file-name))
+
+(defun ensime-sbt-run-command-in-subproject (command file-name)
+  "Run a sbt COMMAND in the module containing FILE-NAME, if specified."
+  (let ((subproject (ensime-subproject-for-config)))
     (if subproject
-        (sbt-command (concat subproject "/ensimeCompileOnly " buffer-file-name))
-      (sbt-command (concat "ensimeCompileOnly " buffer-file-name)))))
+        (sbt-command (concat subproject "/" command " " file-name))
+      (sbt-command (concat command " " file-name)))))
 
 (defun ensime-sbt-do-run ()
   (interactive)
