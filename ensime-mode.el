@@ -66,7 +66,6 @@
       (define-key prefix-map (kbd "C-v r") 'ensime-show-uses-of-symbol-at-point)
       (define-key prefix-map (kbd "C-v s") 'ensime-sbt-switch)
       (define-key prefix-map (kbd "C-v z") 'ensime-inf-switch)
-      (define-key prefix-map (kbd "C-v f") 'ensime-format-source)
       (define-key prefix-map (kbd "C-v u") 'ensime-undo-peek)
       (define-key prefix-map (kbd "C-v v") 'ensime-search)
       (define-key prefix-map (kbd "C-v d") 'ensime-show-doc-for-symbol-at-point)
@@ -105,6 +104,7 @@
       (define-key prefix-map (kbd "C-b S") 'ensime-stacktrace-switch)
       (define-key prefix-map (kbd "C-b c") 'ensime-sbt-do-compile)
       (define-key prefix-map (kbd "C-b C") 'ensime-sbt-do-compile-only)
+      (define-key prefix-map (kbd "C-b f") 'ensime-sbt-do-scalariform-only)
       (define-key prefix-map (kbd "C-b n") 'ensime-sbt-do-clean)
       (define-key prefix-map (kbd "C-b E") 'ensime-sbt-do-ensime-config)
       (define-key prefix-map (kbd "C-b o") 'ensime-sbt-do-test-only-dwim)
@@ -186,7 +186,6 @@
     ("Test")
 
     ("Source"
-     ["Format source" ensime-format-source]
      ["Find all references" ensime-show-uses-of-symbol-at-point]
      ["Inspect type" ensime-inspect-type-at-point]
      ["Inspect type in another frame" ensime-inspect-type-at-point-other-frame]
@@ -233,6 +232,7 @@
      ["Test" ensime-sbt-do-test]
      ["Test Quick" ensime-sbt-do-test-quick]
      ["Test current class" ensime-sbt-do-test-only]
+     ["Format source" ensime-sbt-do-scalariform-only]
      ["Run" ensime-sbt-do-run]
      ["Package" ensime-sbt-do-package])
 
