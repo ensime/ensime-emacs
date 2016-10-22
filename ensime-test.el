@@ -1251,15 +1251,23 @@
    ;;    (ensime-test-cleanup proj))))
 
    (ensime-async-test
-    "Test formatting source."
+    "Ensime integration test formatting source with scalariform-only"
     (let* ((proj (ensime-create-tmp-project
                   `((:name
                      "format_world.scala"
+                     :relative-to "src/main/scala"
                      :contents ,(ensime-test-concat-lines
                                  "class HelloWorld{"
                                  "def foo:Int=1"
                                  "}"
-                                 ""))))))
+                                 ""))
+                    (:name "plugins.sbt"
+                           :relative-to "project"
+                           :contents ,(ensime-test-concat-lines
+                                       (concat "addSbtPlugin\(\"org.scalariform\" \% \"sbt-scalariform\" \% \"1\.6\.0\" \)"))))
+                  ))
+           (src-files (plist-get proj :src-files)))
+      (assert ensime-sbt-command)
       (ensime-test-init-proj proj))
 
     ((:connected))
@@ -1267,7 +1275,7 @@
      (ensime-test-with-proj
       (proj src-files)
       (find-file (car src-files))
-      (ensime-format-source)
+			(tests '(("ensimeScalariformOnly" ensime-sbt-do-scalariform-only)))
       (let ((src (buffer-substring-no-properties
                   (point-min) (point-max))))
         (ensime-assert-equal src (ensime-test-concat-lines
