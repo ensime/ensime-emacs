@@ -730,6 +730,15 @@ Decide what line to insert QUALIFIED-NAME."
 	      (ensime-insert-import qual-name)
 	      (ensime-typecheck-current-buffer))))))))
 
+;; Source Formatting - transition cue to sbt task
+(defun ensime-format-source ()
+  "DEPRECATED - use ensime-sbt-do-scalariform-only directly.
+Functionality was moved from ensime-server to the build tool plugins.
+Use build tools tasks appropriately"
+  (interactive)
+  (message "Function use is deprecated, please transition to ensime-sbt-do-scalariform-only.")
+  (ensime-sbt-do-scalariform-only))
+
 (defun ensime-revert-visited-files (files &optional typecheck)
   "files is a list of buffer-file-names to revert or lists of the form
  (visited-file-name disk-file-name) where buffer visiting visited-file-name
