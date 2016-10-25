@@ -71,8 +71,12 @@
   "Run a sbt COMMAND in the module containing FILE-NAME, if specified."
   (let ((subproject (ensime-subproject-for-config)))
     (if subproject
-        (sbt-command (concat subproject "/" command " " file-name))
-      (sbt-command (concat command " " file-name)))))
+        (if (ensime-is-test-file file-name)
+            (sbt-command (concat subproject "/" "test:" command " " file-name))
+          (sbt-command (concat subproject "/" command " " file-name)))
+      (if (ensime-is-test-file file-name)
+          (sbt-command (concat "test:"command " " file-name))
+        (sbt-command (concat command " " file-name))))))
 
 (defun ensime-sbt-do-run ()
   (interactive)
