@@ -533,7 +533,7 @@
       (message "OK no unreplied messages")))
   (ensime-kill-all-ensime-servers)
 					; In Windows, we can't delete cache files until the server process has exited
-  (sleep-for 1)
+  (sleep-for 3)
   (ensime-cleanup-tmp-project proj no-del))
 
 ;;;;;;;;;;;;;;;;;;
