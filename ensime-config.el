@@ -218,7 +218,7 @@ project directories, because neither does ensime-sbt.)"
 (defun ensime--refresh-config-sbt (project-root task on-success-fn)
   (with-current-buffer (get-buffer-create "*ensime-gen-config*")
     (erase-buffer)
-      (let ((default-directory project-root))
+      (let ((default-directory (file-name-as-directory project-root)))
         (if (executable-find ensime-sbt-command)
             (let ((process (start-process "*ensime-gen-config*" (current-buffer)
                                           ensime-sbt-command task)))
