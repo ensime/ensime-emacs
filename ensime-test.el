@@ -175,6 +175,13 @@
        :targets `(,target-dir)
        :config config))))
 
+(defun ensime-create-tmp-project-compiled (src-files)
+  (let ((proj (ensime-create-tmp-project src-files)))
+    (find-file (car (plist-get proj :src-files)))
+    (ensime-sbt-do-compile)
+    (sleep-for 25)
+    proj))
+
 (defvar ensime-tmp-project-hello-world
   `((:name
      "hello_world.scala"
@@ -1076,9 +1083,10 @@
 
    (ensime-async-test
     "Test rename diff refactoring over multiple files."
-    (let* ((proj (ensime-create-tmp-project
+    (let* ((proj (ensime-create-tmp-project-compiled
                   `((:name
                      "hello_world.scala"
+                     :relative-to "src/main/scala"
                      :contents ,(ensime-test-concat-lines
                                  "package com.helloworld"
                                  "class /*1*/HelloWorld{"
@@ -1086,6 +1094,7 @@
                                  ""))
                     (:name
                      "another.scala"
+                     :relative-to "src/main/scala"
                      :contents ,(ensime-test-concat-lines
                                  "package com.helloworld"
                                  "object Another {"
@@ -1093,7 +1102,13 @@
                                  "val a = new HelloWorld()"
                                  "}"
                                  "}"
-                                 ""))))))
+                                 ""))
+                    (:name
+                     "build.sbt"
+                     :relative-to ""
+                     :contents ,(ensime-test-concat-lines
+                                  (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+                                  (concat "scalaBinaryVersion := \"" (ensime--scala-binary-version ensime--test-scala-version) "\"")))))))
       (ensime-test-init-proj proj))
     ((:connected))
     ((:compiler-ready :full-typecheck-finished)
@@ -1135,7 +1150,7 @@
                              (ensime-test-cleanup proj))))
    (ensime-async-test
     "Test find-references."
-    (let* ((proj (ensime-create-tmp-project
+    (let* ((proj (ensime-create-tmp-project-compiled
                   `((:name
                      "pack/a.scala"
                      :contents ,(ensime-test-concat-lines
@@ -1147,7 +1162,13 @@
                      :contents ,(ensime-test-concat-lines
                                  "package pack"
                                  "class B(value:String) extends A(value){"
-                                 "}"))))))
+                                 "}"))
+                    (:name
+                     "build.sbt"
+                     :relative-to ""
+                     :contents ,(ensime-test-concat-lines
+                                  (concat "scalaVersion := \"" ensime--test-scala-version "\"")
+                                  (concat "scalaBinaryVersion := \"" (ensime--scala-binary-version ensime--test-scala-version) "\"")))))))
       (ensime-test-init-proj proj))
 
     ((:connected))
