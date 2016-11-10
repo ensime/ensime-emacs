@@ -45,7 +45,7 @@
          (ensime-connected-p)
          ensime-sbt-perform-on-save
          (get-buffer (sbt:buffer-name)))
-    (sbt-command ensime-sbt-perform-on-save)))
+    (sbt:command ensime-sbt-perform-on-save)))
 
 (defun ensime-sbt-switch ()
   (interactive)
@@ -53,7 +53,7 @@
 
 (defun ensime-sbt-do-compile ()
   (interactive)
-  (sbt-command "test:compile"))
+  (sbt:command "test:compile"))
 
 (defun ensime-sbt-do-compile-only ()
   "Save the current buffer and compile it using `sbt-ensime's `ensimeCompileOnly' Task."
@@ -72,27 +72,27 @@
   (let ((subproject (ensime-subproject-for-config)))
     (if subproject
         (if (ensime-is-test-file file-name)
-            (sbt-command (concat subproject "/" "test:" command " " file-name))
-          (sbt-command (concat subproject "/" command " " file-name)))
+            (sbt:command (concat subproject "/" "test:" command " " file-name))
+          (sbt:command (concat subproject "/" command " " file-name)))
       (if (ensime-is-test-file file-name)
-          (sbt-command (concat "test:"command " " file-name))
-        (sbt-command (concat command " " file-name))))))
+          (sbt:command (concat "test:"command " " file-name))
+        (sbt:command (concat command " " file-name))))))
 
 (defun ensime-sbt-do-run ()
   (interactive)
-  (sbt-command "run"))
+  (sbt:command "run"))
 
 (defun ensime-sbt-do-clean ()
   (interactive)
-  (sbt-command "clean"))
+  (sbt:command "clean"))
 
 (defun ensime-sbt-do-ensime-config ()
   (interactive)
-  (sbt-command "ensimeConfig"))
+  (sbt:command "ensimeConfig"))
 
 (defun ensime-sbt-do-package ()
   (interactive)
-  (sbt-command "package"))
+  (sbt:command "package"))
 
 ;; shameless copypasta from magit-utils.el
 ;; added one little thing to eval the dynamic submodule binding
@@ -179,8 +179,8 @@ again."
     (if source-set
         (-> (ensime-subproject-for-config)
             (concat "/" source-set command)
-            sbt-command)
-      (-> (ensime-sbt-prompt-for-test) sbt-command))))
+            sbt:command)
+      (-> (ensime-sbt-prompt-for-test) sbt:command))))
 
 (defun ensime-sbt-do-test-dwim ()
   (interactive)
