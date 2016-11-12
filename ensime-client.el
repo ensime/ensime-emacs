@@ -928,7 +928,7 @@ copies. All other objects are used unchanged. List must not contain cycles."
 
 (defun ensime-rpc-symbol-at-point ()
   (ensime-eval
-   `(swank:symbol-at-point ,buffer-file-name ,(ensime-computed-point))))
+   `(swank:symbol-at-point ,(buffer-file-name-with-indirect) ,(ensime-computed-point))))
 
 (defun ensime-rpc-remove-file (file-name)
   (ensime-eval `(swank:remove-file ,file-name)))
@@ -963,7 +963,7 @@ copies. All other objects are used unchanged. List must not contain cycles."
 (defun ensime-rpc-import-suggestions-at-point (names max-results)
   (ensime-eval
    `(swank:import-suggestions
-     ,buffer-file-name
+     ,(buffer-file-name-with-indirect)
      ,(ensime-computed-point)
      ,names
      ,max-results
@@ -988,7 +988,7 @@ copies. All other objects are used unchanged. List must not contain cycles."
 (defun ensime-rpc-uses-of-symbol-at-point ()
   (ensime-eval
    `(swank:uses-of-symbol-at-point
-     ,buffer-file-name
+     ,(buffer-file-name-with-indirect)
      ,(ensime-computed-point)
      )))
 
@@ -1008,11 +1008,11 @@ copies. All other objects are used unchanged. List must not contain cycles."
 (defun ensime-rpc-get-type-by-name-at-point (name)
   (ensime-eval
    `(swank:type-by-name-at-point
-     ,name ,buffer-file-name ,(ensime-computed-point))))
+     ,name ,(buffer-file-name-with-indirect) ,(ensime-computed-point))))
 
 (defun ensime-rpc-get-type-at-point ()
   (ensime-eval
-   `(swank:type-at-point ,buffer-file-name ,(ensime-computed-point))))
+   `(swank:type-at-point ,(buffer-file-name-with-indirect) ,(ensime-computed-point))))
 
 (defun ensime-rpc-inspect-type-at-point ()
   (ensime-eval
@@ -1020,7 +1020,7 @@ copies. All other objects are used unchanged. List must not contain cycles."
 
 (defun ensime-rpc-inspect-type-at-range (&optional range)
   (ensime-eval
-   `(swank:inspect-type-at-point ,buffer-file-name
+   `(swank:inspect-type-at-point ,(buffer-file-name-with-indirect)
                                  ,(or range (ensime-computed-range)))))
 
 (defun ensime-rpc-inspect-type-by-id (id)
@@ -1076,7 +1076,7 @@ copies. All other objects are used unchanged. List must not contain cycles."
 
 (defun ensime-rpc-implicit-info-in-range (start end)
   (ensime-eval `(swank:implicit-info
-                 ,(buffer-file-name)
+                 ,(buffer-file-name-with-indirect)
                  (,(ensime-externalize-offset start) ,(ensime-externalize-offset end)))))
 
 (defun ensime-rpc-get-call-completion (id)

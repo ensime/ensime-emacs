@@ -35,7 +35,7 @@
   "Read config file for settings then start an ensime-server and connect."
   (interactive)
   (ensime-startup-notifications)
-  (let ((orig-bfn buffer-file-name))
+  (let ((orig-bfn (buffer-file-name-with-indirect)))
     (condition-case ex
         (if ensime-auto-generate-config
             (ensime--maybe-refresh-config

@@ -59,13 +59,13 @@
   "Save the current buffer and compile it using `sbt-ensime's `ensimeCompileOnly' Task."
   (interactive)
   (save-buffer)
-  (ensime-sbt-run-command-in-subproject "ensimeCompileOnly" buffer-file-name))
+  (ensime-sbt-run-command-in-subproject "ensimeCompileOnly" (buffer-file-name-with-indirect)))
 
 (defun ensime-sbt-do-scalariform-only ()
   "Format the current file using Scalariform."
   (interactive)
   (save-buffer)
-  (ensime-sbt-run-command-in-subproject "ensimeScalariformOnly" buffer-file-name))
+  (ensime-sbt-run-command-in-subproject "ensimeScalariformOnly" (buffer-file-name-with-indirect)))
 
 (defun ensime-sbt-run-command-in-subproject (command file-name)
   "Run a sbt COMMAND in the module containing FILE-NAME, if specified."
@@ -170,7 +170,7 @@ again."
     (concat module "/" source-set task)))
 
 (defun ensime-sbt-test-dwim (command)
-  (let* ((file-name (or buffer-file-name default-directory))
+  (let* ((file-name (or (buffer-file-name-with-indirect) default-directory))
          (source-set (cond
                       ((string-match-p "src/test" file-name) "")
                       ((string-match-p "/test" file-name) "") ;; for Play's default dir layout

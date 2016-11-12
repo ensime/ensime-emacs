@@ -46,7 +46,7 @@
   ;; this is a good candidate for caching
   (let ((config (or config (ensime-config-for-buffer))))
    (let* ((case-insensitive-fs t) ;; https://github.com/ensime/ensime-emacs/issues/532
-          (canonical (convert-standard-filename buffer-file-name))
+          (canonical (convert-standard-filename (buffer-file-name-with-indirect)))
           (subprojects (plist-get config :subprojects))
           (matches-subproject-dir? (lambda (dir) (s-starts-with-p dir canonical case-insensitive-fs)))
           (find-subproject (lambda (sp)
