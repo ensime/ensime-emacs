@@ -286,8 +286,8 @@ Assembly jars are available at http://ensime.typelevel.org"
       (when (file-exists-p classpath-file) (delete-file classpath-file))
       (make-directory (file-name-directory classpath-file) t)
       (ensime-write-to-file buildfile buildcontents)
-      (ensime-write-to-file buildpluginsfile "addSbtPlugin(\"io.get-coursier\" % \"sbt-coursier\" % \"1.0.0-M13\")\n")
-      (ensime-write-to-file buildpropsfile "sbt.version=0.13.12\n")
+      (ensime-write-to-file buildpluginsfile "addSbtPlugin(\"io.get-coursier\" % \"sbt-coursier-java-6\" % \"1.0.0-M12-1\")\n")
+      (ensime-write-to-file buildpropsfile "sbt.version=0.13.13\n")
 
       (if (executable-find ensime-sbt-command)
           (let ((process (start-process "*ensime-update*" (current-buffer)
