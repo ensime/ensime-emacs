@@ -8,7 +8,7 @@ pipeline:
       - echo $HOME
       - touch test-perms ; ls -la test-perms
       - ls -la /root ; ls -la /root/.cask
-      - cask upgrade
+      - cask upgrade-cask
       - cask pkg-file ;
         cask install ;
         cask package ;
