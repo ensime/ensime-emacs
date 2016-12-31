@@ -8,10 +8,11 @@ pipeline:
       - echo $HOME
       - touch test-perms ; ls -la test-perms
       - ls -la /root ; ls -la /root/.cask
+      - cask upgrade
       - cask pkg-file ;
         cask install ;
         cask package ;
-#      - cask exec ert-runner ;
+      - cask exec ert-runner ;
       - cask exec ecukes ;
       - cd test/example ; sbt ensimeConfig ; cd ../.. ;
       - test/run_emacs_tests.sh || test/run_emacs_tests.sh ;
