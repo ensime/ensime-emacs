@@ -7,6 +7,7 @@
 (require 'dash)
 (require 'imenu)
 (require 'ensime-overlay)
+(require 'eldoc)
 
 ;; Type Inspector UI
 
@@ -55,6 +56,22 @@ If additional parameter use-full-name is provided it'll use type fullname"
         :where (point)
         :duration 'command))
     (message type-name)))
+
+(defun ensime-eldoc ()
+  "ELDoc backend for ensime"
+  ;; The response from `ensime-rpc-symbol-at-point' has the type info but,
+  ;; its sligthly different from the one obtained with `ensime-type-at-point'
+  ;; Using the underlying `ensime-rpc-get-type-at-point' to maintain consistency
+  (when (ensime-connected-p)
+    (let* ((symbol (ensime-rpc-symbol-at-point))
+           (type (ensime-rpc-get-type-at-point))
+           (name (ensime-symbol-local-name symbol))
+           (type-name (ensime-type-name-with-args type)))
+      (when (and type (not (string= type-name "<none>")))
+        (eldoc-message (concat name ": " type-name))))))
+
+(add-hook 'ensime-mode-hook
+          '(lambda () (setq-local eldoc-documentation-function 'ensime-eldoc)))
 
 (defun ensime-type-at-point-full-name (&optional arg)
   "Echo the full type name at point to the minibuffer.
