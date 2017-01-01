@@ -46,6 +46,11 @@
   :type 'boolean
   :group 'ensime-ui)
 
+(defcustom ensime-eldoc-hints t
+  "If non-nil, eldoc hints are activated."
+  :type 'boolean
+  :group 'ensime-ui)
+
 (defcustom ensime-graphical-tooltips nil
   "If non-nil, show graphical bubbles for tooltips."
   :type 'boolean

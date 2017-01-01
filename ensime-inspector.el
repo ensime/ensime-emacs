@@ -70,9 +70,6 @@ If additional parameter use-full-name is provided it'll use type fullname"
       (when (and type (not (string= type-name "<none>")))
         (eldoc-message (concat name ": " type-name))))))
 
-(add-hook 'ensime-mode-hook
-          '(lambda () (setq-local eldoc-documentation-function 'ensime-eldoc)))
-
 (defun ensime-type-at-point-full-name (&optional arg)
   "Echo the full type name at point to the minibuffer.
 A prefix argument will add the type to the kill ring."

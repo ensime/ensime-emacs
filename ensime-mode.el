@@ -320,6 +320,9 @@
 
         (ensime-refresh-all-note-overlays)
 
+        (when ensime-eldoc-hints
+          (setq-local eldoc-documentation-function 'ensime-eldoc))
+
 	(when (equal major-mode 'scala-mode)
 	  (ensime--setup-imenu)))
     (progn
