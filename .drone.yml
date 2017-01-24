@@ -7,7 +7,7 @@ pipeline:
     commands:
       - host `curl -s http://httpbin.org/ip | jq -r '.origin'` || true ;
       - git log | head -n 20 ; git fetch -q --tags
-      - mkdir -p $SBT_VOLATILE_TARGET && mount -t tmpfs -o size=1g tmpfs $SBT_VOLATILE_TARGET ; df -h
+      - mkdir -p $SBT_VOLATILE_TARGET && sudo mount -t tmpfs -o size=1g tmpfs $SBT_VOLATILE_TARGET ; df -h
       - cask pkg-file ;
         cask install ;
         cask package ;
