@@ -2,12 +2,11 @@ pipeline:
   build:
     image: ensime/ensime:v2.x-cache
     pull: true
-    environment:
-      - SBT_VOLATILE_TARGET=/root/ramdisk
+    shm_size: 1024000000
     commands:
       - host `curl -s http://httpbin.org/ip | jq -r '.origin'` || true ;
       - git log | head -n 20 ; git fetch -q --tags
-      - mkdir $SBT_VOLATILE_TARGET || mount -t tmpfs -o size=1g tmpfs $SBT_VOLATILE_TARGET ; df -h
+      - df -h
       - cask pkg-file ;
         cask install ;
         cask package ;
