@@ -2,7 +2,7 @@ pipeline:
   build:
     image: ensime/ensime:v2.x-cache
     pull: true
-    shm_size: 1024000000
+    shmSize: 1g
     commands:
       - host `curl -s http://httpbin.org/ip | jq -r '.origin'` || true ;
       - git log | head -n 20 ; git fetch -q --tags
