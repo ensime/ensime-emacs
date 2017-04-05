@@ -69,7 +69,7 @@ works for sbt projects."
   :type 'boolean
   :group 'ensime-ui)
 
-(defcustom ensime-server-version (or (getenv "ENSIME_SERVER_VERSION") "1.0.0")
+(defcustom ensime-server-version (or (getenv "ENSIME_SERVER_VERSION") "1.0.1")
   "Distributed version of the server to upgrade and start.
 This is primarily useful for ENSIME developers (or bug reporters)
 to test against. The client is designed to work with the default
