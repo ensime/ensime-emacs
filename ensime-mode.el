@@ -120,7 +120,7 @@
       (define-key prefix-map (kbd "C-r l") 'ensime-refactor-diff-extract-local)
       (define-key prefix-map (kbd "C-r m") 'ensime-refactor-diff-extract-method)
       (define-key prefix-map (kbd "C-r i") 'ensime-refactor-diff-inline-local)
-      (define-key prefix-map (kbd "C-r i") 'ensime-refactor-expand-match-cases)
+      (define-key prefix-map (kbd "C-r e") 'ensime-refactor-expand-match-cases)
       (define-key prefix-map (kbd "C-r t") 'ensime-import-type-at-point)
 
       (define-key map ensime-mode-key-prefix prefix-map)
