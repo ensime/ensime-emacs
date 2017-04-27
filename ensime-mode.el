@@ -102,6 +102,7 @@
       (define-key prefix-map (kbd "C-d a") 'ensime-db-clear-all-breaks)
 
       (define-key prefix-map (kbd "C-b s") 'ensime-sbt-switch)
+      (define-key prefix-map (kbd "C-b C-j") 'ensime-sbt-send-eol)
       (define-key prefix-map (kbd "C-b S") 'ensime-stacktrace-switch)
       (define-key prefix-map (kbd "C-b c") 'ensime-sbt-do-compile)
       (define-key prefix-map (kbd "C-b C") 'ensime-sbt-do-compile-only)
