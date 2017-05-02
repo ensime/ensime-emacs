@@ -30,12 +30,6 @@
 (defun ensime-symbol-decl-pos (sym)
   (plist-get sym :decl-pos))
 
-(defun ensime-symbol-name (sym)
-  (plist-get sym :name))
-
-(defun ensime-symbol-local-name (sym)
-  (plist-get sym :local-name))
-
 (defun ensime-symbol-type (sym)
   (plist-get sym :type))
 
