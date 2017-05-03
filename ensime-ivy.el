@@ -44,6 +44,11 @@
                                              ensime-search-max-results))))
 
 ;;;###autoload
+(defun ensime-ivy-select-entry (entries prompt)
+  "Select an entry from ENTRIES, prompted by PROMPT."
+  (ivy-read prompt entries))
+
+;;;###autoload
 (defun ensime-search-ivy ()
   "Search ensime with ivy."
   (interactive)
