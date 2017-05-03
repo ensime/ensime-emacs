@@ -185,7 +185,10 @@ again."
         (-> (ensime-subproject-for-config)
             (concat "/" source-set command)
             sbt:command)
-      (-> (ensime-sbt-prompt-for-test) sbt:command))))
+      (-> (ensime-sbt-prompt-for-test) sbt:command)
+      (message "Run `%s' from a test file to avoid the prompts"
+               (key-description
+                (where-is-internal this-command overriding-local-map t))))))
 
 (defun ensime-sbt-do-test-dwim ()
   (interactive)
