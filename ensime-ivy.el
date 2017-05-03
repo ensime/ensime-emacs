@@ -7,7 +7,7 @@
 ;;
 ;;; Code:
 
-(require 'ivy)
+(require 'ivy "ivy.el" t)
 (require 'ensime-model)
 
 (declare-function ensime-search-jump-to-item "ensime-search.el")
@@ -16,10 +16,10 @@
 (defvar ensime-search-max-results)
 
 (defvar ensime-ivy--search-results '()
-  "Temporary variable to hold search result when using ivy completion")
+  "Temporary variable to hold search result when using ivy completion.")
 
 (defun ensime-ivy--format-search-element (elem)
-  "Formats the search element"
+  "Format the search element ELEM."
   (let ((pos (ensime-search-sym-pos elem)))
     (let* ((maybe-line (ensime-pos-line pos)))
       (let ((line (if maybe-line (number-to-string maybe-line) "?"))
@@ -32,10 +32,11 @@
             (propertize name 'face 'font-lock-type-face)))))))
 
 (defun ensime-ivy-jump-to-item (name)
+  "Open the item associated with NAME, if it has a source location."
   (ensime-search-jump-to-item (cdr (assoc name ensime-ivy--search-results))))
 
 (defun ensime-ivy-public-symbol-search (pattern)
-  "Searches for symbols with the given query"
+  "Search for symbols with the given PATTERN."
   (when (>= (length pattern) ensime-search-min-length)
     (setq ensime-ivy--search-results '())
     (mapcar 'ensime-ivy--format-search-element
@@ -44,7 +45,7 @@
 
 ;;;###autoload
 (defun ensime-search-ivy ()
-  "Searches ensime with ivy"
+  "Search ensime with ivy."
   (interactive)
   (ivy-read "Pattern: "
             #'ensime-ivy-public-symbol-search
