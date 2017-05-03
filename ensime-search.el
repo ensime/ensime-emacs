@@ -24,6 +24,10 @@
   (require 'ensime-macros))
 
 (require 'dash)
+(require 'ensime-ivy)
+
+(defvar ensime-search-interface)
+(defvar ensime-buffer-connection)
 
 (autoload 'ensime-helm-search "ensime-helm")
 
@@ -125,7 +129,13 @@
   "The main entrypoint for ensime-search-mode.
    Initiate an incremental search of all live buffers."
   (interactive)
-  (if ensime-use-helm (ensime-helm-search) (ensime-search-classic)))
+  (pcase ensime-search-interface
+   (`classic
+    (ensime-search-classic))
+   (`helm
+    (ensime-helm-search))
+   (`ivy
+    (ensime-search-ivy))))
 
 (defun ensime-search-classic ()
   "The classic entrypoint for ensime-search-mode.

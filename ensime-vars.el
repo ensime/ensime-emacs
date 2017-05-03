@@ -314,9 +314,10 @@ Possible types: `organizeImport', `rename', `extractLocal',
   :type 'boolean
   :group 'ensime-ui)
 
-(defcustom ensime-use-helm nil
-  "Enable helm for some ensime features"
-  :type 'boolean
+(defcustom ensime-search-interface 'classic
+  "Completion mechanism for search.
+The options are `classic', `helm' and `ivy'."
+  :type '(repeat symbol)
   :group 'ensime-ui)
 
 (provide 'ensime-vars)
