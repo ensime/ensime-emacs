@@ -159,16 +159,16 @@ again."
 (defun ensime-sbt-prompt-for-test ()
   "Prompt sequence when `*-test-dwim' can't figure out what to do."
   (let ((module
-         (completing-read "Do you want to run from module "
+         (completing-read "Module to test: "
                           (->> (-> (ensime-connection) ensime-config (plist-get :subprojects))
                                (-map (lambda (sp) (plist-get sp :name))))))
         (source-set
-         (ensime-sbt-read-char-prompt "Do you want to run from " t
+         (ensime-sbt-read-char-prompt "Test suite: " t
                                       (?t "[t]est" "")
                                       (?i "[i]t" "it:")
                                       (?f "[f]un" "fun:")))
         (task
-         (ensime-sbt-read-char-prompt "Do you want to run " t
+         (ensime-sbt-read-char-prompt "Test command: " t
                                       (?t "[t]est" "test")
                                       (?o "test-[o]nly" "testOnly")
                                       (?q "test-[q]uick" "testQuick"))))
