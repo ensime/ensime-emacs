@@ -47,9 +47,7 @@
          (get-buffer (sbt:buffer-name)))
     (sbt:command ensime-sbt-perform-on-save)))
 
-(defun ensime-sbt-switch ()
-  (interactive)
-  (ensime-sbt))
+(defalias 'ensime-sbt-switch 'ensime-sbt)
 
 (defun ensime-sbt-send-eol ()
   (interactive)
@@ -57,6 +55,7 @@
     (sbt:command "")))
 
 (defun ensime-sbt-do-compile ()
+  "Compile all sources including tests." 
   (interactive)
   (sbt:command "test:compile"))
 
@@ -84,18 +83,22 @@
         (sbt:command (concat command " " file-name))))))
 
 (defun ensime-sbt-do-run ()
+  "Execute the sbt `run' command for the project."
   (interactive)
   (sbt:command "run"))
 
 (defun ensime-sbt-do-clean ()
+  "Execute the sbt `clean' command for the project."
   (interactive)
   (sbt:command "clean"))
 
 (defun ensime-sbt-do-ensime-config ()
+  "Execute the sbt `ensimeConfig' command for the project."
   (interactive)
   (sbt:command "ensimeConfig"))
 
 (defun ensime-sbt-do-package ()
+  "Build a jar file of the project."
   (interactive)
   (sbt:command "package"))
 
@@ -191,14 +194,29 @@ again."
                 (where-is-internal this-command overriding-local-map t))))))
 
 (defun ensime-sbt-do-test-dwim ()
+  "Execute the sbt `test' command for the project and suite that
+corresponds to the current source test file.
+
+If not run from a test source file, then prompt for the project
+module, test suite and test command."
   (interactive)
   (ensime-sbt-test-dwim "test"))
 
 (defun ensime-sbt-do-test-quick-dwim ()
+  "Execute the sbt `testQuick' command for the project and suite
+that corresponds to the current source test file.
+
+If not run from a test source file, then prompt for the project
+module, test suite and test command."
   (interactive)
   (ensime-sbt-test-dwim "testQuick"))
 
 (defun ensime-sbt-do-test-only-dwim ()
+  "Execute the sbt `testOnly' command for the project and suite
+that corresponds to the current source test file.
+
+If not run from a test source file, then prompt for the project
+module, test suite and test command."
   (interactive)
   (let* ((impl-class
           (or (ensime-top-level-class-closest-to-point)
