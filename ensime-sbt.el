@@ -193,6 +193,11 @@ again."
                (key-description
                 (where-is-internal this-command overriding-local-map t))))))
 
+(defun ensime-sbt-do-test ()
+  "Run all the tests."
+  (interactive)
+  (sbt-command "test"))
+
 (defun ensime-sbt-do-test-dwim ()
   "Execute the sbt `test' command for the project and suite that
 corresponds to the current source test file.
