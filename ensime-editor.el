@@ -754,7 +754,7 @@ If user selects an import, add it to the import list."
          (suggestions (when name
                         (ensime-rpc-import-suggestions-at-point
                          (list name) 10))))
-    (when (car-safe suggestions)
+    (if (car-safe suggestions)
       (let* ((names (mapcar
                      (lambda (s)
                        (propertize (plist-get s :name)
@@ -778,7 +778,8 @@ If user selects an import, add it to the import list."
                    (ensime-strip-dollar-signs
                     (ensime-kill-txt-props selected-name))))
               (ensime-insert-import qual-name)
-              (ensime-typecheck-current-buffer))))))))
+              (ensime-typecheck-current-buffer)))))
+      (message "No import suggestions were returned for %S" name))))
 
 ;; Source Formatting - transition cue to sbt task
 (defun ensime-format-source ()
