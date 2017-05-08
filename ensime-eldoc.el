@@ -17,9 +17,9 @@
   (when (ensime-connected-p)
     (let ((msg (pcase ensime-eldoc-hints
                  (`error
-                  (ensime-errors-at (point)))
+                  (mapconcat 'identity (ensime-errors-at (point)) "\n"))
                  (`implicit
-                  (ensime-implicit-notes-at (point)))
+                  (mapconcat 'identity (ensime-implicit-notes-at (point)) "\n"))
                  (`type
                   (ensime-eldoc-type-info))
                  (`all
@@ -28,8 +28,8 @@
                          (type (ensime-eldoc-type-info)))
                     (format "%s\n%s\n%s"
                             type
-                            (if implicit implicit "")
-                            (if error-msg error-msg "")))))))
+                            (mapconcat 'identity implicit "\n")
+                            (mapconcat 'identity error-msg "\n")))))))
       (eldoc-message (s-trim msg)))))
 
 (defun ensime-eldoc-type-info ()
