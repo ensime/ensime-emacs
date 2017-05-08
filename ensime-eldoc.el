@@ -23,13 +23,10 @@
                  (`type
                   (or (ensime-eldoc-type-info) ""))
                  (`all
-                  (let* ((error-msg (ensime-errors-at (point)))
-                         (implicit (ensime-implicit-notes-at (point)))
-                         (type (ensime-eldoc-type-info)))
-                    (format "%s\n%s\n%s"
-                            (or type "")
-                            (mapconcat 'identity implicit "\n")
-                            (mapconcat 'identity error-msg "\n")))))))
+                  (format "%s\n%s\n%s"
+                          (or (ensime-eldoc-type-info) "")
+                          (mapconcat 'identity (ensime-implicit-notes-at (point)) "\n")
+                          (mapconcat 'identity (ensime-errors-at (point)) "\n"))))))
       (eldoc-message (s-trim msg)))))
 
 (defun ensime-eldoc-type-info ()
