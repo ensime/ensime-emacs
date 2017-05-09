@@ -151,7 +151,7 @@ that you have read this message.")
               "including additional steps that are required by your build tool.\n\n"
               "For SBT, add the following to your ~/.sbt/0.13/global.sbt\n\n"
               "\t import org.ensime.EnsimeCoursierKeys._\n"
-              "\t ensimeServerVersion in ThisBuild := \"2.0.0-SNAPSHOT\"\n\n"
+              "\t ensimeServerVersion in ThisBuild := \"2.0.0-M1\"\n\n"
               "Currently other build tools do not support 2.0 file format.\n\n")))
 
     (let* ((server-proc
