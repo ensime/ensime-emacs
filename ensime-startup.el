@@ -117,6 +117,25 @@ that you have read this message.")
   (let ((ensime-prefer-noninteractive t))
     (ensime--maybe-update-and-start orig-buffer-file-name)))
 
+(defun is-dev-version? (version)
+    "It check VERSION string for few patterns coresponded to dev server version string format."
+    (-contains?
+     (-map (lambda (s) (s-contains? s version))
+           '("-M" "-RC" "SNAPSHOT")
+           )
+     t)
+    )
+
+(defun is-server-jars-has-dev-version? (server-jars)
+  "It check SERVER-JARS list of strings for patterns coresponded to dev server version string format."
+  (> (length
+      (-non-nil
+       (-map (lambda (pattern)
+               (--find (s-matches-p pattern it) server-jars))
+             '("ensime.*-M" "ensime.*-RC" "ensime.*SNAPSHOT"))))
+     0)
+  )
+
 (defun* ensime--1 (config-file)
   (when (and (ensime-source-file-p) (not ensime-mode))
     (ensime-mode 1))
@@ -125,6 +144,7 @@ that you have read this message.")
          (cache-dir (file-name-as-directory (ensime--get-cache-dir config)))
          (name (ensime--get-name config))
          (ensime-server-jars (plist-get config :ensime-server-jars))
+         (ensime-server-version (plist-get config :ensime-server-version))
          (scala-compiler-jars (plist-get config :scala-compiler-jars))
          (server-env (or (plist-get config :server-env) ensime-default-server-env))
          (buffer (or (plist-get config :buffer) (concat ensime-default-buffer-prefix name)))
@@ -141,8 +161,9 @@ that you have read this message.")
 
     ;; not relevant for stable releases
     (unless (or
-             (not (s-contains? "SNAPSHOT" ensime-server-version))
-             (--find (s-matches-p "ensime.*SNAPSHOT" it) ensime-server-jars))
+             (is-dev-version? ensime-server-version)
+             (is-server-jars-has-dev-version? ensime-server-jars)
+             )
       (error (concat
               "\n\n"
               "Your build tool has downloaded the stable version of ENSIME "
