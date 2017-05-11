@@ -75,12 +75,6 @@ works for sbt projects."
   :type 'boolean
   :group 'ensime-ui)
 
-(defcustom ensime-server-version
-  (or (getenv "ENSIME_SERVER_VERSION") "2.0.0-M1")
-  "Used to determine if this is a Developer install."
-  :type 'string
-  :group 'ensime-server)
-
 (defcustom ensime-default-server-env ()
   "A `process-environment' compatible list of environment variables"
   :type '(repeat string)
