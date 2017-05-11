@@ -117,24 +117,12 @@ that you have read this message.")
   (let ((ensime-prefer-noninteractive t))
     (ensime--maybe-update-and-start orig-buffer-file-name)))
 
-(defun is-dev-version? (version)
+(defun ensime-dev-version-p (version)
     "It check VERSION string for few patterns coresponded to dev server version string format."
     (-contains?
      (-map (lambda (s) (s-contains? s version))
-           '("-M" "-RC" "SNAPSHOT")
-           )
-     t)
-    )
-
-(defun is-server-jars-has-dev-version? (server-jars)
-  "It check SERVER-JARS list of strings for patterns coresponded to dev server version string format."
-  (> (length
-      (-non-nil
-       (-map (lambda (pattern)
-               (--find (s-matches-p pattern it) server-jars))
-             '("ensime.*-M" "ensime.*-RC" "ensime.*SNAPSHOT"))))
-     0)
-  )
+           '("-M" "-RC" "SNAPSHOT"))
+     t))
 
 (defun* ensime--1 (config-file)
   (when (and (ensime-source-file-p) (not ensime-mode))
@@ -152,7 +140,8 @@ that you have read this message.")
          (server-flags (or (plist-get config :java-flags) ensime-default-java-flags)))
     (make-directory cache-dir 't)
 
-    (unless ensime-server-jars
+    (unless (or ensime-server-jars
+                ensime-server-version)
       (error (concat
               "\n\n"
               "You are using a .ensime file format that is no longer supported.\n"
@@ -160,10 +149,7 @@ that you have read this message.")
               "See http://ensime.org/editors/emacs/install\n\n")))
 
     ;; not relevant for stable releases
-    (unless (or
-             (is-dev-version? ensime-server-version)
-             (is-server-jars-has-dev-version? ensime-server-jars)
-             )
+    (unless (ensime-dev-version-p ensime-server-version) 
       (error (concat
               "\n\n"
               "Your build tool has downloaded the stable version of ENSIME "
