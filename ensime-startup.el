@@ -139,7 +139,7 @@ that you have read this message.")
          (server-flags (or (plist-get config :java-flags) ensime-default-java-flags)))
     (make-directory cache-dir 't)
 
-    (unless (or ensime-server-jars
+    (unless (and ensime-server-jars
                 ensime-server-version)
       (error (concat
               "\n\n"
