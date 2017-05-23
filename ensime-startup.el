@@ -25,13 +25,17 @@
 (defvar ensime--debug-messages nil
   "When true, show debugging information in the echo area")
 
-(defvar ensime-startup-notification t
+(defcustom ensime-startup-notification t
   "Show a popup about documentation.
-It is important that users know about the documentation.")
+It is important that users know about the documentation."
+  :group 'ensime-mode
+  :type 'boolean)
 
-(defvar ensime-startup-snapshot-notification t
+(defcustom ensime-startup-snapshot-notification t
   "Show a warning about using rolling release.
-It is important that users know what they are getting into.")
+It is important that users know what they are getting into."
+  :group 'ensime-mode
+  :type 'boolean)
 
 (defun ensime-startup-notifications ()
   "Invasive informational messages that users need to be aware of."
