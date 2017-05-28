@@ -56,8 +56,10 @@
   "List of functions called when a ensime network connection closes.
 The functions are called with the process as their argument.")
 
-(defvar ensime-log-events nil
-  "*Log protocol events to the *ensime-events* buffer.")
+(defcustom ensime-log-events nil
+  "Log protocol events to the *ensime-events* buffer."
+  :group 'ensime-mode
+  :type 'boolean)
 
 (ensime-def-connection-var ensime-connection-number nil
   "Serial number of a connection.
@@ -125,8 +127,10 @@ overrides `ensime-buffer-connection'.")
 
 (defvar ensime-connections-buffer-name "*ENSIME Connections*")
 
-(defvar ensime-outline-mode-in-events-buffer nil
-  "*Non-nil means use outline-mode in *ensime-events*.")
+(defcustom ensime-outline-mode-in-events-buffer nil
+  "Non-nil means use outline-mode in *ensime-events*."
+  :group 'ensime-mode
+  :type 'boolean)
 
 (defvar ensime-event-buffer-name "*ensime-events*"
   "The name of the ensime event buffer.")
