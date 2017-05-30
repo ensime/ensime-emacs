@@ -205,7 +205,7 @@ that you have read this message.")
 Analyzer will be restarted."
   (interactive)
   (ensime-shutdown)
-  (ensime))
+  (call-interactively 'ensime))
 
 (defun ensime--maybe-start-server (buffer java-home classpath flags env config-file cache-dir)
   "Return a new or existing server process."
