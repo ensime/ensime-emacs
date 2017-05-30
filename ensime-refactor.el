@@ -44,18 +44,19 @@
   "Key bindings for the refactor confirmation popup.")
 
 (defun ensime-refactor-organize-java-imports ()
-  "Sort all import statements lexicographically."
+  "Sort all import statements lexicographically and delete the duplicate imports."
   (save-excursion
     (goto-char (point-min))
     (search-forward-regexp "^\\s-*package\\s-" nil t)
     (goto-char (point-at-eol))
-    (let ((p (point)))
-
+    (let ((beg (point)) end)
       ;; Advance past all imports
       (while (looking-at "[\n\t ]*import\\s-\\(.+\\)\n")
-	(search-forward-regexp "import" nil t)
-	(goto-char (point-at-eol)))
-      (sort-lines nil p (point)))))
+        (search-forward-regexp "import" nil t)
+        (goto-char (point-at-eol)))
+      (setq end (point))
+      (sort-lines nil beg end)
+      (delete-duplicate-lines beg end nil t))))
 
 (defun ensime-refactor-diff-rename (&optional new-name)
   "Rename a symbol, project-wide."
