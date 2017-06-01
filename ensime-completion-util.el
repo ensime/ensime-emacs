@@ -97,14 +97,17 @@
     (when (looking-at scala-syntax:plainid-re)
       (match-string 1))))
 
-(defun ensime-get-completions-async
-    (max-results case-sense callback)
-  (ensime-rpc-async-completions-at-point max-results case-sense
+(defun ensime-get-completions-async (max-results case-sense callback)
+  (ensime-rpc-async-completions-at-point
+   max-results case-sense
    (lexical-let ((continuation callback))
      (lambda (info)
-       (let* ((candidates (ensime--annotate-completions
-			   (plist-get info :completions))))
-	 (funcall continuation candidates))))))
+       (let* ((candidates (remove-if
+                           '(lambda (candidate)
+                              (string-match "\\$" (getf candidate :name)))
+                           (plist-get info :completions)))
+              (candidates (ensime--annotate-completions candidates)))
+         (funcall continuation candidates))))))
 
 (defun ensime-get-completions (max-results case-sense)
   (let* ((info
