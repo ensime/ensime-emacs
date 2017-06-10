@@ -1144,8 +1144,7 @@
     ((:compiler-ready :full-typecheck-finished)
      (ensime-test-with-proj
       (proj src-files)
-      ;; refactor-rename needs all files to be typechecked
-      (ensime-typecheck-all)))
+      (ensime-reload-open-files)))
 
     ((:full-typecheck-finished)
      (ensime-test-with-proj
@@ -1205,8 +1204,7 @@
     ((:compiler-ready :full-typecheck-finished)
      (ensime-test-with-proj
       (proj src-files)
-      ;; find-references requires all files to be typechecked
-      (ensime-typecheck-all)))
+      (ensime-reload-open-files)))
 
     ((:full-typecheck-finished)
      (ensime-test-with-proj
@@ -1247,7 +1245,7 @@
     ((:compiler-ready :full-typecheck-finished)
      (ensime-test-with-proj
       (proj src-files)
-      (ensime-typecheck-all)))
+      (ensime-reload-open-files)))
 
     ((:full-typecheck-finished)
      (ensime-test-with-proj
@@ -1278,7 +1276,7 @@
    ;;  ((:compiler-ready :full-typecheck-finished)
    ;;   (ensime-test-with-proj
    ;;    (proj src-files)
-   ;;    (ensime-typecheck-all)))
+   ;;    (ensime-reload-open-files)))
 
    ;;  ((:full-typecheck-finished)
    ;;   (ensime-test-with-proj
@@ -1292,7 +1290,7 @@
    ;;  ((:full-typecheck-finished)
    ;;   (ensime-test-with-proj
    ;;    (proj src-files)
-   ;;    (ensime-typecheck-all)))
+   ;;    (ensime-reload-open-files)))
 
    ;;  ((:full-typecheck-finished)
    ;;   (ensime-test-with-proj

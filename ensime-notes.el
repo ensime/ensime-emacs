@@ -256,9 +256,7 @@ any buffer visiting the given file."
 	  (goto-char (ensime-internalize-offset (ensime-note-beg next-note)))
 	  (message (ensime-note-message next-note)))
       (message (concat
-		"No more compilation issues in this buffer. "
-		"Use ensime-typecheck-all [C-c C-c a] to find"
-		" all issues, project-wide.")))))
+                "No more compilation issues in this buffer.")))))
 
 (defun ensime-forward-note ()
   "Goto the next compilation note in this buffer"

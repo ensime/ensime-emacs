@@ -454,29 +454,6 @@ Goes to the point of the definition of the type."
   (ensime-write-buffer nil t)
   (ensime-typecheck-current-buffer))
 
-(defun ensime-reload-open-files ()
-  "Make the ENSIME server forget about all files ; reload .class files
-in the project's path ;  then reload only the Scala files that are
-currently open in emacs."
-  (interactive)
-  (message "Unloading all files...")
-  (ensime-rpc-unload-all)
-  (message "Reloading open files...")
-  (setf (ensime-last-typecheck-run-time (ensime-connection)) (float-time))
-  (let* ((buffers (ensime-connection-visiting-buffers (ensime-connection)))
-	 (files (-filter #'file-exists-p (-map #'buffer-file-name buffers))))
-    (ensime-rpc-async-typecheck-files files 'identity)))
-
-(defun ensime-typecheck-all ()
-  "Send a request for re-typecheck of whole project to the ENSIME server.
-   Current file is saved if it has unwritten modifications."
-  (interactive)
-  (message "Checking entire project...")
-  (if (buffer-modified-p) (ensime-write-buffer nil t))
-  (setf (ensime-awaiting-full-typecheck (ensime-connection)) t)
-  (setf (ensime-last-typecheck-run-time (ensime-connection)) (float-time))
-  (ensime-rpc-async-typecheck-all 'identity))
-
 (defun ensime-show-all-errors-and-warnings ()
   "Show a summary of all compilation notes."
   (interactive)

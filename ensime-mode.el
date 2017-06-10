@@ -83,7 +83,6 @@
       (define-key prefix-map (kbd "C-v l") 'ensime-inf-load-file)
 
       (define-key prefix-map (kbd "C-c c") 'ensime-typecheck-current-buffer)
-      (define-key prefix-map (kbd "C-c a") 'ensime-typecheck-all)
       (define-key prefix-map (kbd "C-c r") 'ensime-reload-open-files)
       (define-key prefix-map (kbd "C-c e") 'ensime-show-all-errors-and-warnings)
 
@@ -203,7 +202,6 @@
 
     ("Typecheck"
      ["Typecheck file" ensime-typecheck-current-buffer]
-     ["Typecheck project" ensime-typecheck-all]
      ["Reload typechecker" ensime-reload-open-files]
      ["Show all errors and warnings" ensime-show-all-errors-and-warnings])
 
