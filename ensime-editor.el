@@ -458,13 +458,7 @@ Goes to the point of the definition of the type."
   "Make the ENSIME server forget about all files then reload only
 the Scala files that are currently open in emacs."
   (interactive)
-  (message "Unloading all files...")
-  (ensime-rpc-unload-all)
-  (message "Reloading open files...")
-  (setf (ensime-last-typecheck-run-time (ensime-connection)) (float-time))
-  (let* ((buffers (ensime-connection-visiting-buffers (ensime-connection)))
-	 (files (-filter #'file-exists-p (-map #'buffer-file-name buffers))))
-    (ensime-rpc-async-typecheck-files files 'identity)))
+  (ensime-rpc-restart-scala-compiler))
 
 (defun ensime-show-all-errors-and-warnings ()
   "Show a summary of all compilation notes."

@@ -22,8 +22,6 @@
 
 (require 'ensime-mode)
 
-(defvar ensime-protocol-version "1.0")
-
 (defvar ensime-prefer-noninteractive t
   "State variable used for regression testing, and for skipping prompt in conjunction with sbt.")
 
