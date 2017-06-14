@@ -10,6 +10,9 @@
 ;; Note: This might better be a connection-local variable, but
 ;; afraid that might lead to hanging overlays..
 
+(defvar ensime-mode-remapping nil
+	"Default face remapping")
+
 (defvar ensime-note-overlays '()
   "The overlay structures created to highlight notes.")
 
@@ -129,6 +132,8 @@ any buffer visiting the given file."
 		    (ensime-java-compiler-notes (ensime-connection))
 		    (ensime-scala-compiler-notes (ensime-connection)))
 		 )))
+    (make-local-variable 'ensime-mode-remapping)
+    (setq ensime-mode-remapping nil)
     (ensime-clear-note-overlays)
     (ensime-make-note-overlays notes)
     ))
@@ -177,13 +182,23 @@ any buffer visiting the given file."
   (save-excursion
     (overlay-put ov 'before-string (ensime-before-string sign face))))
 
+
+(defun face-remap-replace-relative (face)
+  (when (not ensime-mode-remapping)
+    (setq-local ensime-mode-remapping
+          (face-remap-add-relative face
+                                   :underline nil
+                                   :weight 'normal
+                                   :slant 'normal)
+          )
+    )
+  ensime-mode-remapping)
+
 (defun ensime-before-string (sign face)
   (propertize " " 'display `((margin left-margin)
                              ,(propertize sign 'face
-                                          (face-remap-add-relative face
-                                                                   :underline nil
-                                                                   :weight 'normal
-                                                                   :slant 'normal)))))
+                                          (face-remap-replace-relative face)
+                                          ))))
 
 (defun ensime-set-left-window-margin (width)
   (let ((curwin (get-buffer-window)))
