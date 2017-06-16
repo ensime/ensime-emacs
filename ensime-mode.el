@@ -33,7 +33,6 @@
 (require 'ensime-company)
 (require 'ensime-eldoc)
 (require 'ensime-goto-testfile)
-(require 'ensime-inspector)
 (require 'ensime-model)
 (require 'ensime-notes)
 (require 'ensime-popup)
@@ -60,11 +59,6 @@
   (let ((map (make-sparse-keymap)))
     (let ((prefix-map (make-sparse-keymap)))
 
-      (define-key prefix-map (kbd "C-v i") 'ensime-inspect-type-at-point)
-      (define-key prefix-map (kbd "C-v 5 i")
-	'ensime-inspect-type-at-point-other-frame)
-      (define-key prefix-map (kbd "C-v p") 'ensime-inspect-package-at-point)
-      (define-key prefix-map (kbd "C-v o") 'ensime-inspect-project-package)
       (define-key prefix-map (kbd "C-v r") 'ensime-show-uses-of-symbol-at-point)
       (define-key prefix-map (kbd "C-v s") 'ensime-sbt-switch)
       (define-key prefix-map (kbd "C-v z") 'ensime-inf-switch)
@@ -194,10 +188,6 @@
 
     ("Source"
      ["Find all references" ensime-show-uses-of-symbol-at-point]
-     ["Inspect type" ensime-inspect-type-at-point]
-     ["Inspect type in another frame" ensime-inspect-type-at-point-other-frame]
-     ["Inspect enclosing package" ensime-inspect-package-at-point]
-     ["Inspect project package" ensime-inspect-project-package]
      ["Undo source change" ensime-undo-peek])
 
     ("Typecheck"
@@ -375,15 +365,6 @@
   (interactive "e")
   (mouse-set-point event)
   (ensime-edit-definition))
-
-(defun ensime-control-mouse-3-single-click (event)
-  "Command handler for double clicks of mouse button 1.
-   If the user clicks on a package declaration or import,
-   inspect that package. Otherwise, try to inspect the type
-   of the thing at point."
-  (interactive "e")
-  (ensime-inspect-type-at-point))
-
 
 (defun ensime-mouse-motion (event)
   "Command handler for mouse movement events in `ensime-mode-map'."

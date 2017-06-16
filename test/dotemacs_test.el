@@ -35,7 +35,7 @@
   (undercover "ensime*.el"
               (:report-file (expand-file-name "coveralls.json"))
               (:send-report nil)
-              (:exclude "ensime-test.el" "dotemacs_test.el" "ensime-inspector.el")))
+              (:exclude "ensime-test.el" "dotemacs_test.el")))
 
 (use-package ensime)
 

@@ -148,7 +148,7 @@ overlay."
             (setq display-string
                   (concat (substring display-string 0 (* 3 (window-width)))
                           (substitute-command-keys
-                           "...\nResult truncated. Type `\\[ensime-inspect-last-result]' to inspect it."))))
+                           "...\nResult truncated."))))
           ;; Create the result overlay.
           (setq o (apply #'ensime--make-overlay
                          beg end type

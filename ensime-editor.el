@@ -872,15 +872,6 @@ Use build tools tasks appropriately"
 	    (end (cadr range)))
 	(ensime-set-selection start end)))))
 
-(defun ensime-inspect-bytecode ()
-  "Show the bytecode for the current method."
-  (interactive)
-  (let ((bc (ensime-rpc-method-bytecode buffer-file-name (ensime-current-line))))
-    (if (not bc)
-	(message "Could not find bytecode.")
-      (progn
-	(ensime-ui-show-nav-buffer "*ensime-method-bytecode-buffer*" bc t)))))
-
 (defun ensime-ui-insert-method-bytecode (val)
   (destructuring-bind
       (&key class-name name bytecode &allow-other-keys) val

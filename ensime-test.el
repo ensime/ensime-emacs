@@ -663,68 +663,6 @@
       (ensime-test-cleanup proj))))
 
    (ensime-async-test
-    "Test inspector ui."
-    (let* ((proj (ensime-create-tmp-project
-                  `((:name
-                     "test.scala"
-                     :contents ,(ensime-test-concat-lines
-                                 "package pack.a"
-                                 "class A(value:/*1*/String){"
-                                 "}"))))))
-      (ensime-test-init-proj proj))
-
-
-    ((:connected))
-    ((:compiler-ready :full-typecheck-finished)
-     (ensime-test-with-proj
-      (proj src-files)
-      (find-file (car src-files))
-      (goto-char (ensime-test-after-label "1"))
-      (ensime-inspect-type-at-point)))
-
-    ((:type-inspector-shown)
-     (ensime-test-with-proj
-      (proj src-files)
-      (switch-to-buffer ensime-inspector-buffer-name)
-      (ensime-assert (search-forward-regexp "^class" nil t))
-      (ensime-assert (search-forward-regexp "^java.lang.String" nil t))
-      (backward-char 1)
-      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-type-full-name) "java.lang.String")
-      (ensime-assert (s-ends-with-p "java/lang/String.html" (ensime--inspector-doc-url-at-point)))
-      (goto-char 1)
-      (ensime-assert (search-forward-regexp "^scala.collection.immutable.StringLike" nil t))
-      (goto-char 1)
-      (ensime-assert (search-forward-regexp "^scala.collection.TraversableOnce" nil t))
-      (goto-char 1)
-      (ensime-assert (search-forward-regexp "^scala.collection.IndexedSeqOptimized" nil t))
-
-      (goto-char 1)
-      (ensime-assert (search-forward-regexp "^equalsIgnoreCase" nil t))
-      (backward-char 1)
-      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-type-full-name) "java.lang.String")
-      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-name) "equalsIgnoreCase")
-      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-signature) "(Ljava/lang/String;)Z")
-      (ensime-assert (let* ((url (ensime--inspector-doc-url-at-point))
-                            (clean (url-unhex-string url)))
-                       (or
-                        (s-ends-with-p "java/lang/String.html#equalsIgnoreCase(java.lang.String)" clean)
-                        ;; java 8 format
-                        (s-ends-with-p "java/lang/String.html#equalsIgnoreCase-java.lang.String-" clean))))
-
-      (goto-char 1)
-      (ensime-assert (search-forward-regexp "^offsetByCodePoints" nil t))
-      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-type-full-name) "java.lang.String")
-      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-name) "offsetByCodePoints")
-      (ensime-assert-equal (plist-get (text-properties-at (point)) :ensime-member-signature) "(II)I")
-
-      (ensime-assert (search-forward-regexp "Arra" nil t))
-      (push-button)
-      (ensime-assert (search-forward-regexp "^scala.Array$" nil t))
-      (ensime-assert (search-forward-regexp "^(compan" nil t))
-      (push-button)
-      (ensime-test-cleanup proj))))
-
-   (ensime-async-test
     "Test completing members."
     (let* ((proj (ensime-create-tmp-project
                   `((:name

@@ -238,20 +238,7 @@
 		  (find-file file-name)
                   (cond
                    (offset (goto-char (ensime-internalize-offset offset)))
-                   (line (ensime-goto-line line))))
-
-	      ;; Otherwise, open the inspector
-	      (let ((decl-as (ensime-search-sym-decl-as item)))
-		(cond
-		 ((or (equal decl-as 'method)
-		      (equal decl-as 'field))
-		  (ensime-inspect-by-path
-		   (ensime-search-sym-owner-name item)
-		   (ensime-search-sym-local-name item)
-		   ))
-
-		 (t (ensime-inspect-by-path
-		     (ensime-search-sym-name item)))))))))
+                   (line (ensime-goto-line line))))))))
 
 
 (defun ensime-search-next-match ()
