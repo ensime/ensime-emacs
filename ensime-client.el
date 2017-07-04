@@ -131,6 +131,8 @@ overrides `ensime-buffer-connection'.")
 (defvar ensime-stack-eval-tags nil
   "List of stack-tags of continuations waiting on the stack.")
 
+(defvar ensime-eval-interruptible nil
+  "Whether `ensime-eval' is interrupted by user inputs.")
 
 (defun ensime-connection-or-nil ()
   "Return the connection to use for ENSIME interaction in the current buffer.
@@ -807,10 +809,12 @@ copies. All other objects are used unchanged. List must not contain cycles."
        (let ((debug-on-quit t)
              (inhibit-quit nil)
              (conn (ensime-connection)))
-         (while t
-           (unless (eq (process-status conn) 'open)
-             (error "Lisp connection closed unexpectedly"))
-           (accept-process-output nil 1 0)))))))
+         (or (while (or (not ensime-eval-interruptible)
+                        (not (input-pending-p)))
+               (unless (eq (process-status conn) 'open)
+                 (error "Lisp connection closed unexpectedly"))
+               (accept-process-output nil 0.1))
+             (list 'ignore)))))))
 
 
 (defun ensime-eval-async (sexp &optional cont)
