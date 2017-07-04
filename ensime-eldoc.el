@@ -32,10 +32,11 @@
 (defun ensime-eldoc-type-info ()
   "Get type information at point in a format suitable for eldoc"
   (when (ensime-connected-p)
-    (let* ((symbol (ensime-rpc-symbol-at-point))
+    (let* ((ensime-eval-interruptible t)
+           (symbol (ensime-rpc-symbol-at-point))
            (type (ensime-rpc-get-type-at-point))
-           (name (plist-get symbol :local-name))
-           (type-name (ensime-type-name-with-args type)))
+           (name (and symbol (plist-get symbol :local-name)))
+           (type-name (and type (ensime-type-name-with-args type))))
       (when (and name type (not (string= type-name "<none>")))
         (format "%s: %s"
                 (propertize name 'face 'font-lock-variable-name-face)
