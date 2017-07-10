@@ -372,6 +372,31 @@
     (setq tooltip-last-mouse-motion-event (copy-sequence event))
     (tooltip-start-delayed-tip)))
 
+;;;;;; imenu
+
+(defun ensime-imenu-index-function ()
+  "Function to be used for `imenu-create-index-function'."
+  (-flatten
+   (-map
+    (lambda (x) (ensime-flatten-structure-view x))
+    (plist-get (ensime-rpc-structure-view) :view))))
+
+(defun ensime-flatten-structure-view (member-plist &optional result parent)
+  (ensime-plist-bind
+   (name keyword members position) member-plist
+   (-when-let* ((offset (plist-get position :offset))
+                (new-parent (if parent (format "%s.%s" parent name) name))
+                (imenu-item (cons
+                             (format "%s:%s" keyword (if parent new-parent name))
+                             (ensime-internalize-offset offset))))
+     (if members
+         (-concat
+          (cons imenu-item result)
+          (-map
+           (lambda (x) (ensime-flatten-structure-view x result new-parent))
+           members))
+       (cons imenu-item result)))))
+
 (defun ensime--setup-imenu ()
   "Setup imenu function and make imenu rescan index with every call."
   (set (make-local-variable 'backup-imenu-auto-rescan) imenu-auto-rescan)
