@@ -138,7 +138,7 @@
     (`ivy
      (if (featurep 'ivy)
          (ensime-search-ivy)
-       (message "Please ensure helm is installed and loaded.")))))
+       (message "Please ensure ivy is installed and loaded.")))))
 
 (defun ensime-search-classic ()
   "The classic entrypoint for ensime-search-mode.
