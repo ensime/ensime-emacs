@@ -985,7 +985,7 @@ copies. All other objects are used unchanged. List must not contain cycles."
 (defun ensime-rpc-uses-of-symbol-at-point ()
   (ensime-eval
    `(swank:uses-of-symbol-at-point
-     ,(buffer-file-name-with-indirect)
+     ,(ensime-src-info-with-contents-in-temp)
      ,(ensime-computed-point)
      )))
 
