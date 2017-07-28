@@ -827,58 +827,24 @@ Use build tools tasks appropriately"
  where the symbol under point is referenced."
   (interactive)
   (let ((uses (ensime-rpc-uses-of-symbol-at-point)))
-    (ensime-with-popup-buffer
-     (ensime-uses-buffer-name t t)
-     (use-local-map ensime-uses-buffer-map)
+    ;(message "%s" uses)
+    (when uses (progn
+                 (let ((selection
+                        (pcase ensime-search-interface
+                          (`classic
+                           (message "Classic not yet supported"))
+                          (`helm
+                           (if (featurep 'helm)
+                               (ensime-helm-select-source-position uses "uses")
+                             (message "Please ensure helm is installed and loaded.")))
+                          (`ivy
+                           (if (featurep 'ivy)
+                               (message "Ivy not yet supported")
+                             (message "Please ensure ivy is installed and loaded."))))))
 
+                   (find-file (ensime-pos-file selection))
+                   (ensime-goto-line (ensime-pos-line selection)))))))
 
-     (ensime-insert-with-face
-      "TAB to advance to next use, q to quit"
-      'font-lock-constant-face)
-     (insert "\n\n\n")
-
-     (dolist (pos uses)
-       (let* ((file (ensime-pos-file pos))
-              (pos-internal-offset (ensime-internalize-offset-for-file
-                                    file
-                                    (ensime-pos-offset pos)))
-
-	      (range-start (- pos-internal-offset 80))
-	      (range-end (+ pos-internal-offset 80))
-	      (result (ensime-extract-file-chunk
-		       file range-start range-end))
-	      (chunk-text (plist-get result :text))
-	      (chunk-start (plist-get result :chunk-start))
-	      (chunk-start-line (plist-get result :chunk-start-line)))
-
-	 (ensime-insert-with-face file 'font-lock-comment-face)
-	 (ensime-insert-with-face
-	  (format "\n------------------- @line %s -----------------------\n"
-		  chunk-start-line)
-	  'font-lock-comment-face)
-
-	 (let ((p (point)))
-
-	   ;; Insert the summary chunk
-	   (insert chunk-text)
-
-	   ;; Highlight the occurances
-	   (let* ((external-from (plist-get pos :start))
-                  (from (ensime-internalize-offset-for-file
-                         file
-                         (plist-get pos :start)))
-		  (to (ensime-internalize-offset-for-file
-                       file
-                       (plist-get pos :end)))
-		  (buffer-from (+ p (- from chunk-start)))
-		  (buffer-to (+ p (- to chunk-start))))
-	     (ensime-make-code-link
-	      buffer-from buffer-to file external-from)))
-
-	 (insert "\n\n\n")))
-     (goto-char (point-min))
-     (when uses (forward-button 1)))
-    (ensime-event-sig :references-buffer-shown)))
 
 
 (defun ensime-type-at-point (&optional arg use-full-name)
