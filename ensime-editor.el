@@ -58,6 +58,7 @@
    :keymap `()))
 
 (defvar ensime-uses-buffer-name "*Uses*")
+(defvar ensime-hierarchy-buffer-name "*Hierarchy*")
 
 (defvar ensime-uses-buffer-map
   (let ((map (make-sparse-keymap)))
@@ -822,28 +823,80 @@ Use build tools tasks appropriately"
 
 ;; Uses UI
 
-(defun ensime-show-uses-of-symbol-at-point ()
-  "Display a hyperlinked list of the source locations
- where the symbol under point is referenced."
+(defun ensime-show-hierarchy-of-type-at-point ()
+  "Show the type hierarchy of type at point."
   (interactive)
-  (let ((uses (ensime-rpc-uses-of-symbol-at-point)))
-    ;(message "%s" uses)
-    (when uses (progn
-                 (let ((selection
-                        (pcase ensime-search-interface
-                          (`classic
-                           (message "Classic not yet supported"))
-                          (`helm
-                           (if (featurep 'helm)
-                               (ensime-helm-select-source-position uses "uses")
-                             (message "Please ensure helm is installed and loaded.")))
-                          (`ivy
-                           (if (featurep 'ivy)
-                               (message "Ivy not yet supported")
-                             (message "Please ensure ivy is installed and loaded."))))))
+  (let ((hierarchy (ensime-rpc-hierarchy-of-type-at-point)))
+    (if hierarchy
+        (progn
+          (switch-to-buffer (get-buffer-create ensime-hierarchy-buffer-name))
+          (setq buffer-read-only nil)
+          (erase-buffer)
+          (let ((ancestors (ensime-type-ancestors hierarchy))
+                (inheritors (ensime-type-inheritors hierarchy)))
+            (insert "### Ancestors\n")
+            (ensime-write-hierarchy-entries-to-buffer ancestors)
+            (insert "\n\n### Inheritors\n")
+            (ensime-write-hierarchy-entries-to-buffer inheritors)))
+      (message "Nothing to show.")))
+  (goto-char 0)
+  (grep-mode))
 
-                   (find-file (ensime-pos-file selection))
-                   (ensime-goto-line (ensime-pos-line selection)))))))
+(defun ensime-write-hierarchy-entries-to-buffer (hierarchy-entries)
+  (dolist (hierarchy-entry hierarchy-entries)
+    (let ((source-position (plist-get hierarchy-entry :source-position)))
+      (insert (ensime-format-source-position source-position))
+      (insert ": ")
+      (insert (ensime-type-fqn hierarchy-entry))
+      (insert "\n"))))
+
+(defun ensime-show-uses-of-symbol-at-point (&optional arg)
+  "Display a hyperlinked list of the source locations
+where the symbol under point is referenced.
+when given the universal-argument the display
+falls back to the classic version."
+  (interactive "P")
+  (let ((uses (ensime-rpc-uses-of-symbol-at-point)))
+    (if uses
+        (progn
+          (if (equal arg '(4))
+              (ensime-classic-show-uses-of-symbol-at-point uses)
+            (progn (let ((selection
+                          (pcase ensime-search-interface
+                            (`classic
+                             (ensime-classic-show-uses-of-symbol-at-point uses))
+                            (`helm
+                             (if (featurep 'helm)
+                                 (ensime-helm-select-source-position uses "uses")
+                               (message "Please ensure helm is installed and loaded.")))
+                            (`ivy
+                             (if (featurep 'ivy)
+                                 (message "Ivy not yet supported")
+                               (message "Please ensure ivy is installed and loaded."))))))
+                     (when selection
+                       (find-file (ensime-pos-file selection))
+                       (ensime-goto-line (ensime-pos-line selection)))))))
+      (message "Nothing to show."))))
+
+(defun ensime-classic-show-uses-of-symbol-at-point (uses)
+  "Renders uses in a new buffer."
+  (switch-to-buffer (get-buffer-create ensime-uses-buffer-name))
+  (setq buffer-read-only nil)
+  (erase-buffer)
+  (dolist (source-position uses)
+      (insert (ensime-format-source-position source-position))
+      (insert ":\n"))
+  (goto-char 0)
+  (grep-mode))
+
+
+(defun ensime-format-source-position (source-position)
+  "Format source position source-position"
+    (let* ((file-name (ensime-pos-file source-position))
+           (maybe-line (ensime-pos-line source-position)))
+      (let ((line (if maybe-line (number-to-string (if (= 0 maybe-line) 1 maybe-line)) "?")))
+       (concat file-name
+       (propertize (concat ":" line) 'face 'font-lock-comment-face)))))
 
 
 

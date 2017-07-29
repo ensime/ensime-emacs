@@ -989,6 +989,13 @@ copies. All other objects are used unchanged. List must not contain cycles."
      ,(ensime-computed-point)
      )))
 
+(defun ensime-rpc-hierarchy-of-type-at-point ()
+  (ensime-eval
+   `(swank:hierarchy-of-type-at-point
+     ,(ensime-src-info-with-contents-in-temp)
+     ,(ensime-computed-point)
+     )))
+
 (defun ensime-rpc-package-member-completions (path &optional prefix)
   (ensime-eval
    `(swank:package-member-completion ,path ,(or prefix ""))))
