@@ -60,6 +60,8 @@
     (let ((prefix-map (make-sparse-keymap)))
 
       (define-key prefix-map (kbd "C-v r") 'ensime-show-uses-of-symbol-at-point)
+      (define-key prefix-map (kbd "C-v h") 'ensime-show-hierarchy-of-type-at-point)
+
       (define-key prefix-map (kbd "C-v s") 'ensime-sbt-switch)
       (define-key prefix-map (kbd "C-v z") 'ensime-inf-switch)
       (define-key prefix-map (kbd "C-v f") 'ensime-format-source)
@@ -185,10 +187,6 @@
   '("ENSIME"
     ("Test")
 
-    ("Source"
-     ["Find all references" ensime-show-uses-of-symbol-at-point]
-     ["Undo source change" ensime-undo-peek])
-
     ("Typecheck"
      ["Typecheck file" ensime-typecheck-current-buffer]
      ["Reload typechecker" ensime-reload-open-files])
@@ -204,16 +202,17 @@
      ["Expand match cases" (ensime-refactor-expand-match-cases)])
 
     ("Navigation"
+     ["Search" ensime-search]
+     ["Show Usages" ensime-show-uses-of-symbol-at-point]
+     ["Show Hierarchy" ensime-show-hierarchy-of-type-at-point]
      ["Lookup definition" ensime-edit-definition]
-     ["Lookup definition in other window" ensime-edit-definition-other-window]
-     ["Lookup definition in other frame" ensime-edit-definition-other-frame]
+     ["Pop definition stack" ensime-pop-find-definition-stack]
+
+     ["Expand selection" ensime-expand-selection-command]
+
      ["Go to test class" ensime-goto-test]
      ["Go to implementation class" ensime-goto-impl]
-     ["Pop definition stack" ensime-pop-find-definition-stack]
-     ["Backward compilation note" ensime-backward-note]
-     ["Forward compilation note" ensime-forward-note]
-     ["Expand selection" ensime-expand-selection-command]
-     ["Search" ensime-search])
+     )
 
     ("Documentation"
      ["Browse documentation of symbol" ensime-show-doc-for-symbol-at-point]
