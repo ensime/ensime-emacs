@@ -171,6 +171,15 @@
 (defun ensime-note-message (note)
   (plist-get note :msg))
 
+(defun ensime-type-ancestors (type)
+  (plist-get type :ancestors))
+
+(defun ensime-type-inheritors (type)
+  (plist-get type :inheritors))
+
+(defun ensime-type-fqn (type)
+  (plist-get type :fqn))
+
 (provide 'ensime-model)
 
 ;; Local Variables:

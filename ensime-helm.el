@@ -11,18 +11,11 @@
 
 (defun ensime-helm-select-source-position (positions name)
   "Select one source position element using helm"
-  (let ((name-alist (mapcar (lambda (elem) (cons (ensime-helm-format-source-position-element elem) elem)) positions)))
+  (let ((name-alist (mapcar (lambda (elem) (cons (ensime-format-source-position elem) elem)) positions)))
   (helm :sources (helm-build-sync-source name
                    :candidates name-alist
                    :fuzzy-match t))))
 
-(defun ensime-helm-format-source-position-element (element)
-  "Format source position element"
-    (let* ((file-name (ensime-pos-file element))
-           (maybe-line (ensime-pos-line element)))
-      (let ((line (if maybe-line (number-to-string maybe-line) "?")))
-       (concat file-name
-       (propertize (concat ":" line) 'face 'font-lock-comment-face)))))
 
 (defun ensime-helm-select-entry (entries name)
   "Select one entry using helm"
