@@ -398,14 +398,16 @@
 
 (defun ensime--setup-imenu ()
   "Setup imenu function and make imenu rescan index with every call."
-  (set (make-local-variable 'backup-imenu-auto-rescan) imenu-auto-rescan)
+  (when (boundp 'imenu-auto-rescan)
+    (set (make-local-variable 'backup-imenu-auto-rescan) imenu-auto-rescan))
   (set (make-local-variable 'backup-imenu-create-index-function) imenu-create-index-function)
   (set (make-local-variable 'imenu-auto-rescan) t)
   (set (make-local-variable 'imenu-create-index-function) #'ensime-imenu-index-function))
 
 (defun ensime--unset-imenu ()
   "Revert ensime specific imenu settings."
-  (setq imenu-auto-rescan backup-imenu-auto-rescan)
+  (when (boundp 'backup-imenu-auto-rescan)
+    (setq imenu-auto-rescan backup-imenu-auto-rescan))
   (setq imenu-create-index-function backup-imenu-create-index-function))
 
 ;;;;;; Tooltips
