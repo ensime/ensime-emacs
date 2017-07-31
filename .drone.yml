@@ -10,5 +10,6 @@ pipeline:
         cask package ;
       - cask exec ert-runner ;
       - cask exec ecukes ;
-      - cd test/example ; sbt ensimeConfig ; cd ../.. ;
-      - test/run_emacs_tests.sh || test/run_emacs_tests.sh ;
+      # Integration tests are currently unmaintained
+      # - cd test/example ; sbt ensimeConfig ; cd ../.. ;
+      # - test/run_emacs_tests.sh || test/run_emacs_tests.sh ;
