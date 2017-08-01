@@ -11,7 +11,7 @@
 
 (defun ensime-helm-select-source-position (positions name)
   "Select one source position element using helm"
-  (let ((name-alist (mapcar (lambda (elem) (cons (ensime-format-source-position elem) elem)) positions)))
+  (let ((name-alist (mapcar (lambda (elem) (cons (ensime-format-source-position (ensime-source-hint-position elem)) elem)) positions)))
   (helm :sources (helm-build-sync-source name
                    :candidates name-alist
                    :fuzzy-match t))))
