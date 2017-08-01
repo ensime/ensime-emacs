@@ -12,10 +12,10 @@
 
 (declare-function ensime-search-jump-to-item "ensime-search.el")
 (declare-function ensime-rpc-public-symbol-search "ensime-client.el")
-(declare-function ensime-format-source-position "ensime-helm.el")
+(declare-function ensime-format-source-position "ensime-editor.el")
+
 (defvar ensime-search-min-length)
 (defvar ensime-search-max-results)
-
 (defvar ensime-ivy--search-results '()
   "Temporary variable to hold search result when using ivy completion.")
 
