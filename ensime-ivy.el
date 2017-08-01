@@ -12,6 +12,7 @@
 
 (declare-function ensime-search-jump-to-item "ensime-search.el")
 (declare-function ensime-rpc-public-symbol-search "ensime-client.el")
+(declare-function ensime-format-source-position "ensime-helm.el")
 (defvar ensime-search-min-length)
 (defvar ensime-search-max-results)
 
@@ -56,6 +57,13 @@
             #'ensime-ivy-public-symbol-search
             :action #'ensime-ivy-jump-to-item
             :dynamic-collection t))
+
+(defun ensime-ivy-select-source-position (positions name)
+  "Select one source position from POSITIONS prompted by NAME."
+  (let ((name-alist (mapcar (lambda (elem)
+                              (cons (ensime-format-source-position elem) elem))
+                            positions)))
+    (ivy-read name name-alist)))
 
 (provide 'ensime-ivy)
 
