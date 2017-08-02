@@ -180,6 +180,14 @@
 (defun ensime-type-fqn (type)
   (plist-get type :fqn))
 
+(defun ensime-type-source-position (type)
+  (plist-get type :source-position))
+
+(defun ensime-source-hint-position (hint)
+  (plist-get hint :position))
+
+
+
 (provide 'ensime-model)
 
 ;; Local Variables:

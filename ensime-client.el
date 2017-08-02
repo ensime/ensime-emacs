@@ -329,7 +329,7 @@ This doesn't mean it will connect right after Ensime is loaded."
   (destructuring-bind (&key pid implementation version &allow-other-keys) info
     (setf (ensime-pid) pid)
     (destructuring-bind (&key name) implementation
-      (if (version< version "1.9.4")
+      (if (version< version "1.9.6")
           (error
            "ENSIME protocol %s is too old, update the build tool plugin / server" version)
         (message "ENSIME protocol %s" version))
