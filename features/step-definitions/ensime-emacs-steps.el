@@ -57,3 +57,12 @@
        (let ((actual-line (s-trim (thing-at-point 'line))))
          (assert (equal line actual-line) nil
                  (format "Expected \"%s\", but was \"%s\"" line actual-line)))))
+
+(Given "^I got a type hierarchy type for \"\\(.+\\)\" in file \"\\(.+\\)\" in line \"\\([0-9]+\\)\"$"
+     (lambda (class file linenumber)
+       (let ((line (string-to-int linenumber)))
+         (setq ensime-helm-test-hierarchy-type-result `(:fqn ,class :source-position (:type line :file ,file :line ,line))))))
+
+(Then "^I format the hierarchy type in the current buffer$"
+     (lambda ()
+       (ensime-write-hierarchy-entries-to-buffer `(,ensime-helm-test-hierarchy-type-result))))
