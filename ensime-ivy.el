@@ -13,6 +13,7 @@
 (declare-function ensime-search-jump-to-item "ensime-search.el")
 (declare-function ensime-rpc-public-symbol-search "ensime-client.el")
 (declare-function ensime-format-source-position "ensime-editor.el")
+(declare-function ensime-source-hint-position "ensime-model.el")
 
 (defvar ensime-search-min-length)
 (defvar ensime-search-max-results)
@@ -45,11 +46,6 @@
                                              ensime-search-max-results))))
 
 ;;;###autoload
-(defun ensime-ivy-select-entry (entries prompt)
-  "Select an entry from ENTRIES, prompted by PROMPT."
-  (ivy-read prompt entries))
-
-;;;###autoload
 (defun ensime-search-ivy ()
   "Search ensime with ivy."
   (interactive)
@@ -61,7 +57,9 @@
 (defun ensime-ivy-select-source-position (positions name)
   "Select one source position from POSITIONS prompted by NAME."
   (let ((name-alist (mapcar (lambda (elem)
-                              (cons (ensime-format-source-position elem) elem))
+                              (cons (ensime-format-source-position
+                                     (ensime-source-hint-position elem))
+                                    elem))
                             positions)))
     (ivy-read name name-alist)))
 

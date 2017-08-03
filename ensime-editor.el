@@ -657,7 +657,7 @@ Decide what line to insert QUALIFIED-NAME."
          (popup-menu* entries :point (point)))))
     (`ivy
      (if (featurep 'ivy)
-         (ensime-ivy-select-entry entries title)
+         (ivy-read entries title)
        (progn
          (message "Ivy is not installed, falling back to popup interface.")
          (popup-menu* entries :point (point)))))))
