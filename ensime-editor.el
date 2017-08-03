@@ -657,7 +657,7 @@ Decide what line to insert QUALIFIED-NAME."
          (popup-menu* entries :point (point)))))
     (`ivy
      (if (featurep 'ivy)
-         (ensime-ivy-select-entry entries title)
+         (ivy-read entries title)
        (progn
          (message "Ivy is not installed, falling back to popup interface.")
          (popup-menu* entries :point (point)))))))
@@ -871,7 +871,7 @@ falls back to the classic version."
                                (message "Please ensure helm is installed and loaded.")))
                             (`ivy
                              (if (featurep 'ivy)
-                                 (message "Ivy not yet supported")
+                                 (ensime-ivy-select-source-position uses "Uses: ")
                                (message "Please ensure ivy is installed and loaded."))))))
                      (when selection
                        (let ((source-position (ensime-source-hint-position selection)))
@@ -896,7 +896,7 @@ falls back to the classic version."
 
 
 (defun ensime-format-source-position (source-position)
-  "Format source position source-position"
+  "Format source position SOURCE-POSITION."
     (let* ((file-name (ensime-pos-file source-position))
            (maybe-line (ensime-pos-line source-position)))
       (let ((line (if maybe-line (number-to-string (if (= 0 maybe-line) 1 maybe-line)) "?")))
