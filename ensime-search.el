@@ -126,21 +126,25 @@
   (summary-start 0)
   (data nil))
 
-(defun ensime-search ()
+(defun ensime-search (&optional arg)
   "The main entrypoint for ensime-search-mode.
-   Initiate an incremental search of all live buffers."
-  (interactive)
-  (pcase ensime-search-interface
-    (`classic
-     (ensime-search-classic))
-    (`helm
-     (if (featurep 'helm)
-         (ensime-helm-search)
-       (message "Please ensure helm is installed and loaded.")))
-    (`ivy
-     (if (featurep 'ivy)
-         (ensime-search-ivy)
-       (message "Please ensure ivy is installed and loaded.")))))
+   Initiate an incremental search of all live buffers. If
+   provided with the universal argument uses
+   ensime-static-search"
+  (interactive "P")
+  (if (equal arg '(4))
+      (ensime-static-search)
+    (pcase ensime-search-interface
+      (`classic
+       (ensime-search-classic))
+      (`helm
+       (if (featurep 'helm)
+           (ensime-helm-search)
+         (message "Please ensure helm is installed and loaded.")))
+      (`ivy
+       (if (featurep 'ivy)
+           (ensime-search-ivy)
+         (message "Please ensure ivy is installed and loaded."))))))
 
 (defun ensime-static-search ()
   "Does a search an displays the result in a grep buffer."
