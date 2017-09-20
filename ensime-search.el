@@ -59,7 +59,7 @@
 (defun ensime-search-classic ()
   "Does a search an displays the result in a grep buffer."
   (interactive)
-  (let* ((search-string (read-string "Search: " nil nil (substring-no-properties (word-at-point))))
+  (let* ((search-string (read-string "Search: " (substring-no-properties (word-at-point))))
          (search-results (ensime-rpc-public-symbol-search
                           (split-string search-string " ") ensime-search-max-results)))
     (switch-to-buffer (get-buffer-create ensime-search-buffer-name))
