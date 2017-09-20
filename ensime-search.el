@@ -44,6 +44,8 @@
 (defvar ensime-search-target-buffer-name "*ensime-search-results*"
   "Buffer name for target-buffer.")
 
+(defvar ensime-static-search-buffer-name "*Ensime Static Search*")
+
 (defvar ensime-search-target-buffer nil
   "Buffer to which the ensime-search is applied to.")
 
@@ -124,21 +126,46 @@
   (summary-start 0)
   (data nil))
 
-(defun ensime-search ()
+(defun ensime-search (&optional arg)
   "The main entrypoint for ensime-search-mode.
-   Initiate an incremental search of all live buffers."
+   Initiate an incremental search of all live buffers. If
+   provided with the universal argument uses
+   ensime-static-search"
+  (interactive "P")
+  (if (equal arg '(4))
+      (ensime-static-search)
+    (pcase ensime-search-interface
+      (`classic
+       (ensime-search-classic))
+      (`helm
+       (if (featurep 'helm)
+           (ensime-helm-search)
+         (message "Please ensure helm is installed and loaded.")))
+      (`ivy
+       (if (featurep 'ivy)
+           (ensime-search-ivy)
+         (message "Please ensure ivy is installed and loaded."))))))
+
+(defun ensime-static-search ()
+  "Does a search an displays the result in a grep buffer."
   (interactive)
-  (pcase ensime-search-interface
-    (`classic
-     (ensime-search-classic))
-    (`helm
-     (if (featurep 'helm)
-         (ensime-helm-search)
-       (message "Please ensure helm is installed and loaded.")))
-    (`ivy
-     (if (featurep 'ivy)
-         (ensime-search-ivy)
-       (message "Please ensure ivy is installed and loaded.")))))
+  (let* ((search-string (read-string "Search: "))
+         (search-results (ensime-rpc-public-symbol-search
+                          (split-string search-string " ") ensime-search-max-results)))
+    (switch-to-buffer (get-buffer-create ensime-static-search-buffer-name))
+    (setq buffer-read-only nil)
+    (erase-buffer)
+    (insert (concat "Ensime search results for " search-string ":"  "\n\n"))
+    (dolist (search-result search-results)
+      (let* ((pos (ensime-search-sym-pos search-result))
+             (formatted-pos (ensime-format-source-position pos))
+             (name (ensime-search-sym-name search-result)))
+        (insert formatted-pos)
+        (insert ": ")
+        (insert name)
+        (insert "\n")))
+    (goto-char 0)
+    (grep-mode)))
 
 (defun ensime-search-classic ()
   "The classic entrypoint for ensime-search-mode.
