@@ -41,20 +41,22 @@
 (defvar ensime-search-max-results 50
   "The max number of results to return per rpc call.")
 
-(defun ensime-search ()
+(defun ensime-search (&optional arg)
   "ENSIME indexer search."
-  (interactive)
-  (pcase ensime-search-interface
-    (`classic
-     (ensime-search-classic))
-    (`helm
-     (if (featurep 'helm)
-         (ensime-helm-search)
-       (message "Please ensure helm is installed and loaded.")))
-    (`ivy
-     (if (featurep 'ivy)
-         (ensime-search-ivy)
-       (message "Please ensure ivy is installed and loaded.")))))
+  (interactive "P")
+  (if (equal arg '(4))
+      (ensime-search-classic)
+    (pcase ensime-search-interface
+      (`classic
+       (ensime-search-classic))
+      (`helm
+       (if (featurep 'helm)
+           (ensime-helm-search)
+         (message "Please ensure helm is installed and loaded.")))
+      (`ivy
+       (if (featurep 'ivy)
+           (ensime-search-ivy)
+         (message "Please ensure ivy is installed and loaded."))))))
 
 (defun ensime-search-classic ()
   "Does a search an displays the result in a grep buffer."
