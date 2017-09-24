@@ -113,13 +113,6 @@ that you have read this message.")
   (let ((ensime-prefer-noninteractive t))
     (ensime--maybe-update-and-start orig-buffer-file-name)))
 
-(defun ensime-dev-version-p (version)
-    "It check VERSION string for few patterns coresponded to dev server version string format."
-    (-contains?
-     (-map (lambda (s) (s-contains? s version))
-           '("-M" "-RC" "SNAPSHOT"))
-     t))
-
 (defun* ensime--1 (config-file)
   (when (and (ensime-source-file-p) (not ensime-mode))
     (ensime-mode 1))
@@ -143,19 +136,6 @@ that you have read this message.")
               "You are using a .ensime file format that is no longer supported.\n"
               "You must upgrade your build tool or downgrade to ensime stable.\n"
               "See http://ensime.org/editors/emacs/install\n\n")))
-
-    ;; not relevant for stable releases
-    (unless (ensime-dev-version-p ensime-server-version)
-      (error (concat
-              "\n\n"
-              "Your build tool has downloaded the stable version of ENSIME "
-              "but you are using the Developer Emacs install.\n\n"
-              "Check that you followed all the steps at http://ensime.org/editors/emacs/install "
-              "including additional steps that are required by your build tool.\n\n"
-              "For SBT, add the following to your ~/.sbt/0.13/global.sbt\n\n"
-              "\t import org.ensime.EnsimeCoursierKeys._\n"
-              "\t ensimeServerVersion in ThisBuild := \"2.0.0-M1\"\n\n"
-              "Currently other build tools do not support 2.0 file format.\n\n")))
 
     (let* ((server-proc
             (ensime--maybe-start-server
