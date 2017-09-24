@@ -31,7 +31,7 @@ It is important that users know about the documentation."
   :group 'ensime-mode
   :type 'boolean)
 
-(defcustom ensime-startup-snapshot-notification t
+(defcustom ensime-startup-snapshot-notification-3 t
   "Show a warning about using rolling release.
 It is important that users know what they are getting into."
   :group 'ensime-mode
@@ -40,7 +40,7 @@ It is important that users know what they are getting into."
 (defun ensime-startup-notifications ()
   "Invasive informational messages that users need to be aware of."
 
-  (when ensime-startup-snapshot-notification
+  (when ensime-startup-snapshot-notification-3
     (let ((developer (generate-new-buffer "*ENSIME Developer Edition*")))
       (with-current-buffer developer
         (insert
@@ -52,22 +52,15 @@ Please get involved in the development of ensime and help to create high quality
 reproductions of bugs.
 
 Please note:
+
 1. you are expected to remain up-to-date with developments. You
    will get access to new features but regressions in existing
-   features will happen from time to time (typically while we
-   await a volunteer to make required changes to the emacs
-   plugin, please help by getting involved!).
+   features will happen from time to time.
 
-2. remember to upgrade both the emacs and server components
-   regularly as they can get out of sync with each other. Do not
-   forget to follow the process outlined in
-   http://ensime.org/editors/emacs/troubleshooting/
+2. the 3.0 server requires big changes on the emacs side that
+   have not yet been implemented.
 
-You can disable this message permanently by setting
-`ensime-startup-snapshot-notification' to `nil', acknowledging
-that you have read this message.
-
-If you want to install the stable release of ensime instead, delete
+If you meant to install the stable release of ensime instead, delete
 ~/.emacs.d/elpa/ensime and follow the instructions at:
 
 * http://ensime.org/editors/emacs/install/")
