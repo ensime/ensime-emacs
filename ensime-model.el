@@ -186,6 +186,9 @@
 (defun ensime-source-hint-position (hint)
   (plist-get hint :position))
 
+(defun ensime-preview (hint)
+  (plist-get hint :preview))
+
 
 
 (provide 'ensime-model)
