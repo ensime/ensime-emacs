@@ -9,10 +9,6 @@
 
 (require 'helm "helm.el" t)
 
-(defun string-or-empty (str)
-  "Returns the string or empty string if nil"
-  (if str str ""))
-
 (defun ensime-helm-select-source-position (positions name)
   "Select one source position element using helm"
   (let ((name-alist (mapcar
@@ -20,7 +16,7 @@
                                      (concat
                                       (ensime-format-source-position (ensime-source-hint-position elem))
                                       " "
-                                      (propertize (string-or-empty (ensime-preview elem)) 'face 'font-lock-doc-face))
+                                      (propertize (or (ensime-preview elem) "" ) 'face 'font-lock-doc-face))
                                      elem)) positions)))
   (helm :sources (helm-build-sync-source name
                    :candidates name-alist
