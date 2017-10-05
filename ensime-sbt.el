@@ -218,6 +218,45 @@ module, test suite and test command."
   (interactive)
   (ensime-sbt-test-dwim "testQuick"))
 
+(defun ensime-top-level-class-closest-to-point ()
+  "Return the name of first class, trait or object enclosing the point,
+or (if the point isn't inside a class definition) the class that follows
+the point. Return nil if no class can be found."
+  ;; TODO use an RPC call instead of this cheesy search
+  (cl-labels
+      ((inside-string? () (nth 3 (syntax-ppss)))
+       (pos-of-top-level-class (&optional last-try)
+         (save-excursion
+           (save-restriction
+             (widen)
+             (while (inside-string?)
+               (goto-char (1- (point))))
+             (let ((top-level-sexp (point)))
+               ;; Try to go up a sexp until we get an error
+               (condition-case nil
+                   (while t
+                     (setq top-level-sexp (point))
+                     (backward-up-list))
+                 (error nil))
+               (goto-char top-level-sexp)
+
+               (re-search-backward "}\\|\\<object\\>\\|\\<class\\>\\|\\<trait\\>" nil t)
+               (let ((class-re
+                      (concat "\\<\\(object\\|class\\|trait\\)[ \t\n]+\\("
+                              scala-syntax:id-re
+                              "\\)")))
+                 (if (re-search-forward class-re nil t)
+                     (match-beginning 2)
+                   (unless last-try
+                     (pos-of-top-level-class t)))))))))
+    (let ((pos (pos-of-top-level-class)))
+      (when pos
+        (save-excursion
+          (goto-char pos)
+          (replace-regexp-in-string
+           "\\$$" ""
+           (plist-get (ensime-rpc-get-type-at-point) :full-name)))))))
+
 (defun ensime-sbt-do-test-only-dwim ()
   "Execute the sbt `testOnly' command for the project and suite
 that corresponds to the current source test file.
