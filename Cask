@@ -32,6 +32,7 @@
  (depends-on "auto-complete")
  (depends-on "helm")
  (depends-on "ivy")
+ (depends-on "eieio")
  ;;(depends-on "expand-region")
  (depends-on "f")
  (depends-on "ert-runner")

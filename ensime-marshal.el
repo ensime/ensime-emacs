@@ -1,0 +1,98 @@
+(require 'eieio)
+
+(defun ensime-marshal-unmarshal-value (data-value slot-marshal-info)
+  (let* ((slot-type (plist-get slot-marshal-info :field-type))
+         (use-discriminator (plist-get slot-marshal-info :use-discriminator)))
+    (cond
+     ((equal slot-type 'string)
+      data-value)
+     ((equal slot-type 'boolean)
+      data-value)
+     ((equal slot-type 'number)
+      data-value)
+     ((and (class-p slot-type) use-discriminator)
+      (ensime-marshal-unmarshal-discriminated-object data-value))
+     ((class-p slot-type)
+      (ensime-marshal-unmarshal-object data-value slot-type))
+     ((and (listp slot-type) (equal 'list (car slot-type)) (class-p (cadr slot-type)) use-discriminator)
+      (mapcar (lambda (obj) (ensime-marshal-unmarshal-discriminated-object obj)) data-value))
+     ((and (listp slot-type) (equal 'list (car slot-type)) (class-p (cadr slot-type)))
+      (mapcar (lambda (obj) (ensime-marshal-unmarshal-object obj (cadr slot-type))) data-value))
+     ;; Lists of atoms will get here
+     (t data-value))))
+
+(defun ensime-marshal-unmarshal-object-slots (object data marshal-info)
+  (cl-loop for (slot-name . slot-marshal-info) in marshal-info
+           do (let* ((field-name (plist-get slot-marshal-info :field-name))
+                     (data-value (plist-get data field-name))
+                     (unmarshalled-value (ensime-marshal-unmarshal-value data-value slot-marshal-info)))
+                (eieio-oset object slot-name unmarshalled-value)))
+  object)
+
+(defun ensime-marshal-unmarshal-discriminated-object (data)
+  (let* ((object-class (intern (string-remove-prefix ":" (symbol-name (car data)))))
+         (data (cadr data))
+         (marshal-info (get object-class :marshal-info))
+         (object (make-instance object-class)))
+    (ensime-marshal-unmarshal-object-slots object data marshal-info)))
+
+(defun ensime-marshal-unmarshal-object (data object-class)
+  (let* ((marshal-info (get object-class :marshal-info))
+         (object (make-instance object-class)))
+    (ensime-marshal-unmarshal-object-slots object data marshal-info)))
+
+(defun ensime-marshal-marshal-slot (slot-value slot-marshal-info)
+  (let* ((slot-type (plist-get slot-marshal-info :field-type))
+         (use-discriminator (plist-get slot-marshal-info :use-discriminator)))
+    (cond
+      ((eq 'string slot-type) slot-value)
+      ((eq 'number slot-type) slot-value)
+      ((eq 'boolean slot-type) slot-value)
+      ((class-p slot-type)
+        (ensime-marshal-marshal-object slot-value (plist-get slot-marshal-info :use-discriminator)))
+      ((and (listp slot-type) (eq 'list (car slot-type)) (class-p (cadr slot-type)))
+       (mapcar (lambda (obj) (ensime-marshal-marshal-object obj (plist-get slot-marshal-info :use-discriminator))) slot-value))
+      ;; List of atoms will get here
+      (t slot-value))))
+
+(defun ensime-marshal-marshal-slots (object slots marshal-info)
+  (cl-mapcan (lambda (slot)
+               (let* ((slot-value (eieio-oref object slot))
+                      (slot-marshal-info (cdr (assoc slot marshal-info)))
+                      (serialized-value (ensime-marshal-marshal-slot slot-value slot-marshal-info)))
+                 `(,(plist-get slot-marshal-info :field-name) ,serialized-value)
+                 )
+               )
+             slots))
+
+(defun ensime-marshal-marshal-object (object write-discriminator)
+  (let* ((marshal-info (get (eieio-object-class object) :marshal-info))
+         (slots (object-slots object))
+         (marshalled-object (ensime-marshal-marshal-slots object slots marshal-info))
+         (discriminator (intern (concat ":" (symbol-name (eieio-object-class object))))))
+    (if write-discriminator
+        `(,discriminator (,@marshalled-object))
+        marshalled-object)
+    ))
+
+(defun ensime-marshal-build-marshal-info (slots)
+  (mapcar (lambda (slot)
+            (let* ((slot-name (car slot))
+                   (field-name (intern (concat ":" (symbol-name slot-name))))
+                   (slot-info (cdr slot))
+                   (slot-type (plist-get slot-info :type))
+                   (use-discriminator (and (class-p slot-type) (class-abstract-p slot-type))))
+              `(,slot-name . (:field-name ,field-name :field-type ,slot-type :use-discriminator ,use-discriminator))))
+            slots))
+
+(defmacro ensime-marshal-defclass (name superclass slots &rest options-and-doc)
+  (let* ((options (if (stringp (car options-and-doc))
+                     (cdr options-and-doc)
+                    options-and-doc))
+         (marshal-info (ensime-marshal-build-marshal-info slots)))
+    `(progn
+       (defclass ,name ,superclass
+         (,@slots)
+         ,@options-and-doc)
+
+       (put ',name :marshal-info ',marshal-info))))
