@@ -1,7 +1,5 @@
 (require 'websocket)
 
-(defvar ensime-websocket-connection nil "open websocket connection")
-
 (defun ensime-websocket-hook-on-open (websocket)
   ""
   (message "websocket open"))
@@ -15,21 +13,16 @@
   (message "websocket closed")
   (setq ensime-websocket-connection nil))
 
-(defun ensime-websocket-connect ()
+(defun ensime-websocket-connect (host port)
   ""
   (interactive)
-  (setq ensime-websocket-connection
-        (websocket-open
-         "ws://127.0.0.1:33985/websocket"
-         :protocols '("swanky")
-         :on-open #'ensime-websocket-hook-on-open
-         :on-message #'ensime-websocket-hook-on-message
-         :on-close #'ensime-websocket-hool-on-close)))
+  (websocket-open
+   (format "ws://%s:%s/websocket" host port)
+   :protocols '("swanky")
+   :on-open #'ensime-websocket-hook-on-open
+   :on-message #'ensime-websocket-hook-on-message
+   :on-close #'ensime-websocket-hool-on-close))
 
-(defun ensime-websocket-disconnect ()
-  ""
-  (interactive)
-  (websocket-close ensime-websocket-connection))
 
 (defun ensime-websocket-send-request (connection request)
   ""
@@ -40,3 +33,5 @@
   ""
   (interactive)
   (ensime-websocket-send-request ensime-websocket-connection '(:ensime-api-public-symbol-search-req (:keywords ("foo" "bar") :max-results 10))))
+
+(provide 'ensime-websocket)

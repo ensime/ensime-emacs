@@ -45,6 +45,7 @@
   (require 'ensime-macros))
 (require 'ensime-vars)
 (require 'dash)
+(require 'ensime-websocket)
 
 (defvar ensime-net-processes nil
   "List of processes (sockets) connected to Lisps.")
@@ -308,7 +309,7 @@ This doesn't mean it will connect right after Ensime is loaded."
     process))
 
 (defun ensime-connect (host port &optional disconnect)
-  "Connect to a running Swank server. Return the connection."
+  "Connect to a running SWANKY server. Return the connection."
   (interactive (list
         (read-from-minibuffer "Host: " "127.0.0.1")
         (read-from-minibuffer "Port: " nil nil t)
@@ -316,8 +317,8 @@ This doesn't mean it will connect right after Ensime is loaded."
 	     (y-or-n-p "Close old connections first? "))))
   (when disconnect
     (ensime-disconnect-all))
-  (message "Connecting to Swank on port %S.." port)
-  (let* ((process (ensime-net-connect host port))
+  (message "Connecting to SWANKY on port %S.." port)
+  (let* ((process (ensime-websocket-connect host port))
          (ensime-dispatching-connection process))
     (ensime-setup-connection process)))
 

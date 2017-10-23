@@ -149,7 +149,7 @@ that you have read this message.")
              cache-dir))
            (host "127.0.0.1")
            (port-fn (lambda () (ensime--read-portfile
-                             (concat cache-dir "/port")))))
+                             (concat cache-dir "/http")))))
 
       ;; Store the config on the server process so we can identify it later.
       (process-put server-proc :ensime-config config)
