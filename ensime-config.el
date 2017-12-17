@@ -1,4 +1,6 @@
-;;; ensime-config.el
+;;; ensime-config.el -- Ensime configuration utilities
+
+;;; Commentary:
 ;;
 ;;;; License
 ;;
@@ -19,12 +21,15 @@
 ;;     Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
 ;;     MA 02111-1307, USA.
 
-
+;;; Code:
 (eval-when-compile
   (require 'cl)
   (require 'ensime-macros))
 
 (require 'dash)
+
+(defvar ensime-server-processes)
+(defvar ensime--cache-source-root-set nil)
 
 (defvar ensime-config-file-name ".ensime"
   "The default file name for ensime project configurations.")
@@ -38,20 +43,37 @@
   "Obtain the ENSIME Server process for the given CONFIG (auto discovered if NIL)."
   ;; this is a bit of a hack, we should always have ready access to this
   (let ((config (or config (ensime-config-for-buffer))))
-   (-first (lambda (p) (eq config (process-get p :ensime-config)))
-           ensime-server-processes)))
+    (-first (lambda (p) (eq config (process-get p :ensime-config)))
+            ensime-server-processes)))
 
+;; DEPRECATED
 (defun ensime-subproject-for-config (&optional config)
   "Obtain the subproject for the current buffer for the given CONFIG (auto discovered if NIL)."
   ;; this is a good candidate for caching
   (let ((config (or config (ensime-config-for-buffer))))
-   (let* ((case-insensitive-fs t) ;; https://github.com/ensime/ensime-emacs/issues/532
-          (canonical (convert-standard-filename (buffer-file-name-with-indirect)))
-          (subprojects (plist-get config :subprojects))
-          (matches-subproject-dir? (lambda (dir) (s-starts-with-p dir canonical case-insensitive-fs)))
-          (find-subproject (lambda (sp)
-                             (-any matches-subproject-dir? (plist-get sp :source-roots)))))
-     (-> (-find find-subproject subprojects) (plist-get :name)))))
+    (let* ((case-insensitive-fs t) ;; https://github.com/ensime/ensime-emacs/issues/532
+           (canonical (convert-standard-filename (buffer-file-name-with-indirect)))
+           (subprojects (plist-get config :subprojects))
+           (matches-subproject-dir? (lambda (dir) (s-starts-with-p dir canonical case-insensitive-fs)))
+           (find-subproject (lambda (sp)
+                              (-any matches-subproject-dir? (plist-get sp :source-roots)))))
+      (-> (-find find-subproject subprojects) (plist-get :name)))))
+
+(defun ensime-project-for-current-buffer (&optional config)
+  "Return the project id containing the file in the current buffer.
+Optionally a CONFIG can be specified."
+  ;; this is a good candidate for caching
+  (let ((config (or config (ensime-config-for-buffer))))
+    (let* ((case-insensitive-fs t) ;; https://github.com/ensime/ensime-emacs/issues/532
+           (canonical
+            (convert-standard-filename (buffer-file-name-with-indirect)))
+           (projects (plist-get config :projects))
+           (matches-project-dir?
+            (lambda (dir) (s-starts-with-p dir canonical case-insensitive-fs)))
+           (find-project
+            (lambda (sp) (-any matches-project-dir? (plist-get sp :sources)))))
+      (-> (-find find-project projects)
+          (plist-get :id)))))
 
 
 ;; DEPRECATED: these getters should be replaced with a function that takes the key
@@ -89,7 +111,6 @@
   (let ((cache-dir (ensime--get-cache-dir config)))
     (concat cache-dir "/dep-src/source-jars/")))
 
-(defvar ensime--cache-source-root-set nil)
 (defun ensime--source-root-set (conf no-ref-sources)
   "Returns a hash set containing all source directories (expanded with
  file-truename) of the give config."
@@ -177,12 +198,9 @@ NO-REF-SOURCES allows skipping the extracted dependencies."
     (lambda (m) (plist-get m :source-roots))
     (plist-get (ensime-config (ensime-connection)) :subprojects))))
 
-
-;; Confing auto-gen -- sbt only
-
 (defun ensime-refresh-config ()
-  "Try to refresh the ENSIME config file based on the project definition. Currently
-only sbt projects are supported."
+  "Try to refresh the ENSIME config file based on the project definition.
+Currently only sbt projects are supported."
   (interactive)
   (ensime--maybe-refresh-config
    t
