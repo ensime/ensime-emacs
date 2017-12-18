@@ -31,7 +31,7 @@
 
 (defun ensime-sbt ()
   "Switch to the sbt shell (create if necessary) if or if already there, back.
-   If already there but the process is dead, restart the process. "
+If already there but the process is dead, restart the process."
   (interactive)
   (ensime-with-conn-interactive
    conn
@@ -55,34 +55,31 @@
     (sbt:command "")))
 
 (defun ensime-sbt-do-compile ()
-  "Compile all sources including tests." 
+  "Compile all sources including tests."
   (interactive)
   (sbt:command "test:compile"))
 
 (defun ensime-sbt-do-compile-only (arg)
-  "Compile this buffer using `sbt-ensime's `ensimeCompileOnly', ARG will add `-Xprint:typer'."
+  "Compile this buffer using `sbt-ensime's `ensimeCompileOnly'.
+ARG will add `-Xprint:typer'."
   (interactive "P")
   (save-buffer)
-  (let ((command
-         (if arg "ensimeCompileOnly -Xprint:typer" "ensimeCompileOnly")))
-    (ensime-sbt-run-command-in-subproject command (buffer-file-name-with-indirect))))
+  (if arg
+      (ensime-sbt-run-command-in-project "ensimeCompileOnly -Xprint:typer" t)
+    (ensime-sbt-run-command-in-project "ensimeCompileOnly" t)))
 
-(defun ensime-sbt-do-scalariform-only ()
-  "Format the current file using Scalariform."
-  (interactive)
-  (save-buffer)
-  (ensime-sbt-run-command-in-subproject "ensimeScalariformOnly" (buffer-file-name-with-indirect)))
-
-(defun ensime-sbt-run-command-in-subproject (command file-name)
-  "Run a sbt COMMAND in the module containing FILE-NAME, if specified."
-  (let ((subproject (ensime-subproject-for-config)))
-    (if subproject
-        (if (ensime-is-test-file file-name)
-            (sbt:command (concat subproject "/" "test:" command " " file-name))
-          (sbt:command (concat subproject "/" command " " file-name)))
-      (if (ensime-is-test-file file-name)
-          (sbt:command (concat "test:"command " " file-name))
-        (sbt:command (concat command " " file-name))))))
+(defun ensime-sbt-run-command-in-project (command &optional arg)
+  "Run a sbt COMMAND in the module containing the file in current buffer.
+If ARG is specified, the filename is passed as a paramter to the command."
+  (let ((subproject (ensime-project-for-current-buffer))
+        (file-name (if arg (buffer-file-name-with-indirect) nil)))
+    (sbt:command (concat (plist-get subproject :project)
+                         "/"
+                         (plist-get subproject :config)
+                         ":"
+                         command
+                         " "
+                         file-name))))
 
 (defun ensime-sbt-do-run ()
   "Execute the sbt `run' command for the project."
