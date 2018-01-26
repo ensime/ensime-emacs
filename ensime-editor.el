@@ -274,7 +274,7 @@
   (interactive "P")
   (ensime-edit-definition arg 'frame))
 
-(defun ensime-edit-definition (arg &optional where)
+(defun ensime-edit-definition (&optional arg where)
   "Lookup the definition of the name at point.
 
 If provided with the universal arguments looks up the definition
