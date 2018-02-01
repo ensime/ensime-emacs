@@ -265,7 +265,7 @@ module, test suite and test command."
           (or (ensime-top-level-class-closest-to-point)
               (return (message "Could not find top-level class"))))
          (cleaned-class (replace-regexp-in-string "<empty>\\." "" impl-class))
-         (command (concat "test-only" " " cleaned-class)))
+         (command (concat "testOnly" " " cleaned-class)))
     (ensime-sbt-test-dwim command)))
 
 
