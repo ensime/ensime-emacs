@@ -141,8 +141,8 @@ block notation for the final parameter."
   (define-key yas-minor-mode-map (kbd "TAB") nil)
 
   (if (window-system)
-      (local-set-key [tab] #'ensime-company-complete-or-indent)
-    (local-set-key (kbd "TAB") #'ensime-company-complete-or-indent)))
+      (define-key ensime-mode-map [tab] #'ensime-company-complete-or-indent)
+    (define-key ensime-mode-map (kbd "TAB") #'ensime-company-complete-or-indent)))
 
 (defun ensime--yasnippet-complete-action (&optional candidate-in force-block)
   "Side-effect yasnippet completion for the candidate.
