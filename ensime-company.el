@@ -120,7 +120,7 @@ block notation for the final parameter."
   :type 'number
   :group 'ensime-ui)
 
-(defcustom company-minimum-prefix-length 2
+(defcustom ensime-company-minimum-prefix-length 2
   "Minimum prefix length until completion starts automatically when using company-mode."
   :type 'number
   :group 'ensime-ui)
