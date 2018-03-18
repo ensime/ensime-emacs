@@ -236,6 +236,7 @@ Used for determining the default in the next one.")
       (comint-send-string nil ":paste\n")
       (comint-send-string nil reg)
       (comint-send-string nil "\n")
+      (sleep-for 0.2)
       (comint-send-eof))))
 
 (defun ensime-inf-eval-result ()
@@ -243,12 +244,12 @@ Used for determining the default in the next one.")
   (with-current-buffer ensime-inf-buffer-name
     (save-excursion
       (goto-char (point-max))
-      (next-line -2)
+      (forward-line -2)
       (end-of-line)
       (let ((end (point)))
         (if (search-backward "Exiting paste mode, now interpreting." nil t)
             (progn
-              (next-line 2)
+              (forward-line 2)
               (beginning-of-line)
               (buffer-substring-no-properties (point) end))
           nil)))))
@@ -334,6 +335,7 @@ Used for determining the default in the next one.")
 (defun ensime-inf-postoutput-filter (str)
   ;; Ideally we'd base this on comint's decision on whether it's seen
   ;; a prompt, but that decision hasn't been made by this stage
+  (sleep-for 0.1)
   (unless (or (string-equal str "") (string-equal "\n" (substring str -1)))
     (ensime-event-sig :inf-repl-ready)
     (when (markerp  ensime-inf-overlay-marker)
