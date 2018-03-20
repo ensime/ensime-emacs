@@ -11,7 +11,7 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'cl)
+  (require 'cl-lib)
   (require 'ensime-macros))
 
 (require 'ensime-client)
@@ -45,14 +45,15 @@ block notation for the final parameter."
         (section-count 0))
     (mapconcat
      (lambda (sect)
-       (incf section-count)
+       (cl-incf section-count)
        (let* ((params (plist-get sect :params)))
          (if (and pass-function-block
                   (= section-count (length param-sections)))
 
              ;; If requested, expand the last section as an inline block.
              (let* ((type-info (cadar params))
-                    (block-params (plist-get (car (plist-get type-info :param-sections)) :params))
+                    (block-params
+                     (plist-get (car (plist-get type-info :param-sections)) :params))
                     (result-type (plist-get type-info :result-type)))
                (if (ensime-type-is-by-name-p type-info) " { $0 }"
                  (concat
@@ -62,8 +63,10 @@ block notation for the final parameter."
                           (lambda (name-and-type)
                             (cl-destructuring-bind (name type) name-and-type
                               (let ((param-name (ensime--yasnippet-escape name))
-                                    (type-name (ensime--yasnippet-escape (plist-get type :name))))
-                                (format "${%s:%s: %s}" (incf tab-stop) param-name type-name))))
+                                    (type-name (ensime--yasnippet-escape
+                                                (plist-get type :name))))
+                                (format "${%s:%s: %s}"
+                                        (cl-incf tab-stop) param-name type-name))))
                           block-params
                           ", ")))
                     (cond ((> (length block-params) 1) (format "(%s)" param-list)) ;; (Int, String) => ...
@@ -71,7 +74,7 @@ block notation for the final parameter."
                           ((= (length block-params) 0) "()"))) ;; () => ...
                   (let ((result-type-name (ensime--yasnippet-escape
                                            (plist-get result-type :name))))
-                    (format " => ${%s:%s} }$0" (incf tab-stop) result-type-name)))))
+                    (format " => ${%s:%s} }$0" (cl-incf tab-stop) result-type-name)))))
 
            ;; Otherwise build template for a standard parameter list.
            (concat (if infix " " "(")
@@ -81,7 +84,7 @@ block notation for the final parameter."
                             (type-name (ensime--yasnippet-escape
                                         (plist-get (cadr nm-and-tp) :name))))
                         (format "${%s:%s: %s}"
-                                (incf tab-stop)
+                                (cl-incf tab-stop)
                                 param-name type-name)))
                     params ", ")
                    (if infix "" ")")))))
@@ -113,7 +116,7 @@ block notation for the final parameter."
 	    (not (ensime--company-try-completion)))
     (if mark-active
         (indent-region (region-beginning) (region-end))
-      (indent-according-to-mode))))
+      (indent-for-tab-command))))
 
 (defcustom ensime-company-idle-delay 0
   "The idle delay in seconds until completion starts automatically when using company-mode."
@@ -128,21 +131,22 @@ block notation for the final parameter."
 ;;;###autoload
 (defun ensime-company-enable ()
   (make-local-variable 'company-backends)
-  (push #'ensime-company company-backends)
+  (cl-pushnew #'ensime-company company-backends)
   (company-mode t)
 
   (set (make-local-variable 'company-idle-delay) ensime-company-idle-delay)
   (set (make-local-variable 'company-minimum-prefix-length) ensime-company-minimum-prefix-length)
 
   ;; https://github.com/joaotavora/yasnippet/issues/708#issuecomment-222517433
-  (yas-minor-mode t)
-  (make-local-variable 'yas-minor-mode-map)
-  (define-key yas-minor-mode-map [(tab)] nil)
-  (define-key yas-minor-mode-map (kbd "TAB") nil)
+  (yas-minor-mode)
+  ;; (make-local-variable 'yas-minor-mode-map)
+  ;; (define-key yas-minor-mode-map [(tab)] nil)
+  ;; (define-key yas-minor-mode-map (kbd "TAB") nil)
 
-  (if (window-system)
-      (local-set-key [tab] #'ensime-company-complete-or-indent)
-    (local-set-key (kbd "TAB") #'ensime-company-complete-or-indent)))
+  ;; (if (window-system)
+  ;;     (local-set-key [tab] #'ensime-company-complete-or-indent)
+  ;;   (local-set-key (kbd "TAB") #'ensime-company-complete-or-indent))
+  )
 
 (defun ensime--yasnippet-complete-action (&optional candidate-in force-block)
   "Side-effect yasnippet completion for the candidate.
