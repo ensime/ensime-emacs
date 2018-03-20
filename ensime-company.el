@@ -120,7 +120,7 @@ block notation for the final parameter."
   :type 'number
   :group 'ensime-ui)
 
-(defcustom company-minimum-prefix-length 2
+(defcustom ensime-company-minimum-prefix-length 2
   "Minimum prefix length until completion starts automatically when using company-mode."
   :type 'number
   :group 'ensime-ui)
@@ -132,7 +132,7 @@ block notation for the final parameter."
   (company-mode t)
 
   (set (make-local-variable 'company-idle-delay) ensime-company-idle-delay)
-  (set (make-local-variable 'company-minimum-prefix-length) company-minimum-prefix-length)
+  (set (make-local-variable 'company-minimum-prefix-length) ensime-company-minimum-prefix-length)
 
   ;; https://github.com/joaotavora/yasnippet/issues/708#issuecomment-222517433
   (yas-minor-mode t)

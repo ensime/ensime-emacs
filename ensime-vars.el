@@ -47,9 +47,11 @@
   :group 'ensime-ui)
 
 (defcustom ensime-eldoc-hints nil
-  "If non-nil, eldoc hints are activated.
-It can be set to 'all, 'error, 'implicit or 'type to limit the type of hints shown"
+  "If set to one of the available options, eldoc hints are activated.
+Available options are 'all, 'error, 'implicit or 'type to limit the type of hints 
+shown"
   :type 'symbol
+  :options '(all error implicit type)
   :group 'ensime-ui)
 
 (defcustom ensime-graphical-tooltips nil
