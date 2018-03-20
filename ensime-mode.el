@@ -98,7 +98,6 @@
       (define-key prefix-map (kbd "C-b S") 'ensime-stacktrace-switch)
       (define-key prefix-map (kbd "C-b c") 'ensime-sbt-do-compile)
       (define-key prefix-map (kbd "C-b C") 'ensime-sbt-do-compile-only)
-      (define-key prefix-map (kbd "C-b f") 'ensime-sbt-do-scalariform-only)
       (define-key prefix-map (kbd "C-b n") 'ensime-sbt-do-clean)
       (define-key prefix-map (kbd "C-b E") 'ensime-sbt-do-ensime-config)
       (define-key prefix-map (kbd "C-b o") 'ensime-sbt-do-test-only-dwim)
@@ -220,7 +219,6 @@
      ["Test module/suite" ensime-sbt-do-test-dwim]
      ["Test quick" ensime-sbt-do-test-quick-dwim]
      ["Test current class" ensime-sbt-do-test-only-dwim]
-     ["Format source" ensime-sbt-do-scalariform-only]
      ["Run" ensime-sbt-do-run]
      ["Package" ensime-sbt-do-package])
 
