@@ -66,3 +66,20 @@
 (Then "^I format the hierarchy type in the current buffer$"
      (lambda ()
        (ensime-write-hierarchy-entries-to-buffer `(,ensime-helm-test-hierarchy-type-result))))
+
+(Given "^I got a config with version \"\\(.+\\)\" and source-root \"\\(.+\\)\"$"
+     (lambda (version source-root)
+       (let ((proc (start-process "foo" nil "sleep" "60")))
+         (process-put proc :ensime-config `(:cache-dir ,source-root :ensime-server-version ,version :subprojects ((:name "root" :source-roots (,source-root)))))
+         (push proc ensime-server-processes))))
+
+(Then "^the buffer is lsp only$"
+     (lambda ()
+         (assert (ensime-lsp-mode-for-source-file (buffer-file-name-with-indirect)) nil
+                 (format "Expected t, but was nil"))))
+
+(Then "^the buffer is not lsp only$"
+     (lambda ()
+         (assert (not (ensime-lsp-mode-for-source-file (buffer-file-name-with-indirect))) nil
+                 (format "Expected nil, but was t"))))
+

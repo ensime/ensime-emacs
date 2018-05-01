@@ -98,6 +98,7 @@
 
 ;; File/path functions
 
+;;;###autoload
 (defun ensime-source-file-p (&optional filename)
   "Return t if the given filename (or the currently visited file if no
 argument is supplied) is a .scala or .java file."

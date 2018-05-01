@@ -483,7 +483,8 @@ include connection-name, and possibly some state information."
          (let ((conn (ensime-connection-or-nil)))
            (cond ((not conn)
                   (if (ensime-owning-server-process-for-source-file (buffer-file-name-with-indirect))
-                      "ENSIME: Starting"
+                      (if (ensime-lsp-mode-for-source-file (buffer-file-name-with-indirect))
+                          "ENSIME: LSP" "ENSIME: Starting")
                     "ENSIME: Disconnected"))
                  ((ensime-connected-p conn)
                   (let ((config (ensime-config conn)))

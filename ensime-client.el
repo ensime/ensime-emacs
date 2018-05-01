@@ -149,10 +149,9 @@ overrides `ensime-buffer-connection'.")
         conn)))
 
 (defun ensime-proc-if-alive (proc)
-  "Returns proc if proc's buffer is alive and proc has not exited,
- otherwise nil."
+  "Returns proc if proc's buffer is alive (or doesn't have an associated buffer) and proc has not exited, otherwise nil."
   (when (and proc
-	     (buffer-live-p (process-buffer proc))
+	     (or (null (process-buffer proc)) (buffer-live-p (process-buffer proc)))
 	     (let ((status (process-status proc)))
 	       (and (not (eq status 'exit))
 		    (not (null status)))))
@@ -197,6 +196,18 @@ overrides `ensime-buffer-connection'.")
 (defun ensime-source-file-belongs-to-connection-p (file-in conn)
   "Does the given source file belong to the given connection(project)?"
   (ensime-config-includes-source-file (ensime-config conn) file-in))
+
+(defun ensime-lsp-version-p (version)
+    (-contains?
+     (-map (lambda (s) (s-contains? s version))
+           '("3.0.0-SNAPSHOT"))
+     t))
+
+(defun ensime-lsp-mode-for-source-file (source-file)
+  "`t' if config associated with buffer uses lsp-mode."
+  (let ((good-proc (ensime-owning-server-process-for-source-file source-file)))
+    (if (not (null good-proc)) 
+        (ensime-lsp-version-p (plist-get (process-get good-proc :ensime-config) :ensime-server-version)))))
 
 (defun ensime-owning-server-process-for-source-file (source-file)
   "Returns the first server process with a source-root that contains
@@ -275,14 +286,16 @@ This doesn't mean it will connect right after Ensime is loaded."
 
 (defun ensime-auto-connect ()
   (cond ((or (eq ensime-auto-connect 'always)
-         (and (eq ensime-auto-connect 'ask)
-          (y-or-n-p "No connection.  Start Ensime? ")))
-     (save-window-excursion
-       (ensime)
-       (while (not (ensime-connection-or-nil))
-         (sleep-for 1))
-       (ensime-connection)))
-    (t nil)))
+             (and (eq ensime-auto-connect 'ask)
+                  (y-or-n-p "No connection.  Start Ensime? ")))
+         (save-window-excursion
+           (ensime)
+           (if (ensime-lsp-mode-for-source-file (buffer-file-name-with-indirect))
+               (error "LSP does not swanky")
+             (while (not (ensime-connection-or-nil))
+               (sleep-for 1))
+             (ensime-connection))))
+        (t nil)))
 
 (defun ensime-setup-connection (process)
   "Make a connection out of PROCESS."

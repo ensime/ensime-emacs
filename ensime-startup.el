@@ -77,19 +77,6 @@ that you have read this message.")
   (let ((ensime-prefer-noninteractive t))
     (ensime--maybe-update-and-start orig-buffer-file-name)))
 
-(defun ensime-dev-version-p (version)
-    "It check VERSION string for few patterns coresponded to dev server version string format."
-    (-contains?
-     (-map (lambda (s) (s-contains? s version))
-           '("-M" "-RC" "SNAPSHOT"))
-     t))
-
-(defun ensime-lsp-version-p (version)
-    (-contains?
-     (-map (lambda (s) (s-contains? s version))
-           '("3.0.0-SNAPSHOT"))
-     t))
-
 (defun* ensime--1 (config-file)
   (when (and (ensime-source-file-p) (not ensime-mode))
     (ensime-mode 1))
@@ -169,6 +156,7 @@ Analyzer will be restarted."
 
 (defun ensime--engage-lsp (command-list)
   (interactive)
+  (add-hook 'lsp-after-initialize-hook (lambda () (message "ENSIME ready. %s" (ensime-random-words-of-encouragement))))
   (lsp-define-stdio-client lsp-scala "scala"
                            (lambda () (sbt:find-root))
                            command-list 
@@ -179,7 +167,7 @@ Analyzer will be restarted."
 
 (defun ensime--maybe-start-server (buffer java-home classpath flags env config-file cache-dir)
   "Return a new or existing server process."
-  (let ((existing (comint-check-proc buffer)))
+  (let ((existing (or (and lsp--cur-workspace (lsp--workspace-proc lsp--cur-workspace)) (comint-check-proc buffer))))
     (if existing existing
       (ensime--start-server buffer java-home classpath flags env config-file cache-dir))))
 
@@ -204,38 +192,44 @@ CACHE-DIR is the server's persistent output directory."
                             (concat "-Dlogback.configurationFile=" ensime-server-logback))
                           "org.ensime.server.Server"
                           (if (ensime-lsp-version-p ensime-server-version) "--lsp" nil)
-                                        ;                            (if (ensime-lsp-version-p ensime-server-version) nil nil)
                           ))))
-    (if (ensime-lsp-version-p ensime-server-version)
-        (ensime--engage-lsp (cons java-command args))
-      (with-current-buffer (get-buffer-create buffer)
-        (comint-mode)
-        (set (make-local-variable 'comint-process-echoes) nil)
-        (set (make-local-variable 'comint-use-prompt-regexp) nil)
 
-        ;; Get rid of default filters including ansi coloring, scroll to bottom,
-        ;; and scanning for password prompt. These use non-trivial cpu.
-        (set (make-local-variable 'comint-output-filter-functions) nil)
+    (if (not (executable-find java-command))
+        (error "java command %s not found" java-command))
 
-        (when ensime--debug-messages
-          (make-local-variable 'comint-output-filter-functions)
-          (push #'(lambda (str) (message "%s" str)) comint-output-filter-functions))
+    (let ((proc 
+           (if (ensime-lsp-version-p ensime-server-version)
+               (ensime--engage-lsp (cons java-command args))
+             (with-current-buffer (get-buffer-create buffer)
+               (comint-mode)
+               (set (make-local-variable 'comint-process-echoes) nil)
+               (set (make-local-variable 'comint-use-prompt-regexp) nil)
 
-        (insert (format "Starting ENSIME server: %s %s\n"
-                        java-command
-                        (mapconcat 'identity args " ")))
-        (if (not (executable-find java-command))
-            (error "java command %s not found" java-command)
-          (comint-exec (current-buffer) buffer java-command nil args)
-          ;; Make sure we clean up nicely (required on Windows, or port files won't
-          ;; be removed).
-          (add-hook 'kill-emacs-hook 'ensime-kill-emacs-hook-function)
-          (add-hook 'kill-buffer-hook 'ensime-interrupt-buffer-process nil t)
-          (let ((proc (get-buffer-process (current-buffer))))
-            (ensime-set-query-on-exit-flag proc)
-            (run-hooks 'ensime-server-process-start-hook)
-            proc))
-        ))))
+               ;; Get rid of default filters including ansi coloring, scroll to bottom,
+               ;; and scanning for password prompt. These use non-trivial cpu.
+               (set (make-local-variable 'comint-output-filter-functions) nil)
+
+               (when ensime--debug-messages
+                 (make-local-variable 'comint-output-filter-functions)
+                 (push #'(lambda (str) (message "%s" str)) comint-output-filter-functions))
+
+               (insert (format "Starting ENSIME server: %s %s\n"
+                               java-command
+                               (mapconcat 'identity args " ")))
+
+               (comint-exec (current-buffer) buffer java-command nil args)
+
+               ;; Make sure we clean up nicely (required on Windows, or port files won't
+               ;; be removed).
+               (add-hook 'kill-emacs-hook 'ensime-kill-emacs-hook-function)
+               (add-hook 'kill-buffer-hook 'ensime-interrupt-buffer-process nil t)
+               (get-buffer-process (current-buffer))
+               ))))
+      (ensime-set-query-on-exit-flag proc)
+      (run-hooks 'ensime-server-process-start-hook)
+      proc)
+
+    ))
 
 (defun ensime-kill-emacs-hook-function ()
   "Swallow and log errors on exit."
