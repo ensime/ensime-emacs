@@ -46,12 +46,14 @@
   "Read config file for settings. Then connect to an existing ENSIME server."
   (interactive "shost: \nnport: ")
 
-  (let ((orig-buffer-file-name buffer-file-name))
+  (let ((orig-buffer-file-name buffer-file-name)
+        (ensime-ip (url-gateway-nslookup-host host)))
     (if ensime-auto-generate-config
         (ensime--maybe-refresh-config
          nil
-         `(lambda () (ensime--maybe-update-and-start orig-buffer-file-name (url-gateway-nslookup-host ,host) ,port))
-         `(lambda (reason) (ensime--maybe-update-and-start orig-buffer-file-name (url-gateway-nslookup-host ,host) ,port))))))
+         `(lambda () (ensime--maybe-update-and-start orig-buffer-file-name ensime-ip port))
+         `(lambda (reason) (ensime--maybe-update-and-start orig-buffer-file-name ensime-ip port)))
+      (ensime--maybe-update-and-start orig-buffer-file-name ensime-ip port))))
 
 (provide 'ensime)
 
