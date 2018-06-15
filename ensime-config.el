@@ -102,9 +102,9 @@ Optionally a CONFIG can be specified."
     value))
 
 (defun ensime-config-source-roots (conf)
-  "Returns a list of all directories mentioned in :source-roots directives."
-  (let ((subs (plist-get conf :subprojects)))
-    (-mapcat (lambda (sub) (plist-get sub :source-roots)) subs)))
+  "Return a list of all directories mentioned in :sources directives in CONF."
+  (let ((subs (plist-get conf :projects)))
+    (-mapcat (lambda (sub) (plist-get sub :sources)) subs)))
 
 (defun ensime-source-jars-dir (config)
   "Directory containing extracted dependency sources for the given CONFIG."
