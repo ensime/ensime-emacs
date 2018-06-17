@@ -222,13 +222,8 @@ Used for determining the default in the next one.")
   (comint-send-string ensime-inf-buffer-name (apply 'format str args))
   (comint-send-string ensime-inf-buffer-name "\n"))
 
-(defun ensime-inf-eval-region (start end)
-  "Send current region to Scala interpreter. If no region is active send current line to Scala interpreter."
-  (interactive "r")
-  (ensime-inf-assert-running)
-  (let* ((start (if (use-region-p) start (line-beginning-position)))
-         (end   (if (use-region-p) end (line-end-position)))
-         (reg (buffer-substring-no-properties start end))
+(defun ensime-inf-comint-send-region (start end)
+  (let* ((reg (buffer-substring-no-properties start end))
          (buffer (buffer-name)))
     (setq ensime-inf-overlay-marker (copy-marker end))
     (with-current-buffer ensime-inf-buffer-name
@@ -238,6 +233,14 @@ Used for determining the default in the next one.")
       (comint-send-string nil "\n")
       (sleep-for 0.2)
       (comint-send-eof))))
+
+(defun ensime-inf-eval-region (start end)
+  "Send current region to Scala interpreter. If no region is active send current line to Scala interpreter."
+  (interactive "r")
+  (ensime-inf-assert-running)
+  (let* ((start (if (use-region-p) start (line-beginning-position)))
+         (end   (if (use-region-p) end (line-end-position))))
+    (ensime-inf-comint-send-region start end)))
 
 (defun ensime-inf-eval-result ()
   "Get REPL evaluation result."
@@ -296,13 +299,13 @@ Used for determining the default in the next one.")
         (next-line -1)
         (beginning-of-line))
       (message "region %s %s" (point) end)
-      (ensime-inf-eval-region (point) end))))
+      (ensime-inf-comint-send-region (point) end))))
 
 
 (defun ensime-inf-eval-buffer ()
   "Send whole buffer to Scala interpreter."
   (interactive)
-  (ensime-inf-eval-region (point-min) (point-max)))
+  (ensime-inf-comint-send-region (point-min) (point-max)))
 
 (defun ensime-inf-load-file (file-name)
   "Load a file in the Scala interpreter."
