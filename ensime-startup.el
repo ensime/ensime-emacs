@@ -77,13 +77,6 @@ that you have read this message.")
   (let ((ensime-prefer-noninteractive t))
     (ensime--maybe-update-and-start orig-buffer-file-name)))
 
-(defun ensime-dev-version-p (version)
-    "It check VERSION string for few patterns coresponded to dev server version string format."
-    (-contains?
-     (-map (lambda (s) (s-contains? s version))
-           '("-M" "-RC" "SNAPSHOT"))
-     t))
-
 (defun* ensime--1 (config-file)
   (when (and (ensime-source-file-p) (not ensime-mode))
     (ensime-mode 1))
@@ -161,9 +154,20 @@ Analyzer will be restarted."
   (ensime-shutdown)
   (call-interactively 'ensime))
 
+(defun ensime--engage-lsp (command-list)
+  (interactive)
+  (add-hook 'lsp-after-initialize-hook (lambda () (message "ENSIME ready. %s" (ensime-random-words-of-encouragement))))
+  (lsp-define-stdio-client lsp-scala "scala"
+                           (lambda () (sbt:find-root))
+                           command-list 
+                           :docstring "enable lsp for scala")
+  (lsp-scala-enable)
+  (lsp--workspace-proc lsp--cur-workspace)
+  )
+
 (defun ensime--maybe-start-server (buffer java-home classpath flags env config-file cache-dir)
   "Return a new or existing server process."
-  (let ((existing (comint-check-proc buffer)))
+  (let ((existing (or (and lsp--cur-workspace (lsp--workspace-proc lsp--cur-workspace)) (comint-check-proc buffer))))
     (if existing existing
       (ensime--start-server buffer java-home classpath flags env config-file cache-dir))))
 
@@ -174,45 +178,58 @@ FLAGS is a list of JVM flags.
 USER-ENV is a list of environment variables.
 CACHE-DIR is the server's persistent output directory."
   (message "ENSIME server starting...")
-  (with-current-buffer (get-buffer-create buffer)
-    (comint-mode)
-    (let* ((default-directory cache-dir)
-           (tools-jar (expand-file-name "lib/tools.jar" java-home))
-           (process-environment (append user-env process-environment))
-           (java-command (expand-file-name "bin/java" java-home))
-           (args (-flatten (list
-                            "-classpath" (ensime--build-classpath (cons tools-jar classpath))
-                            flags
-                            (concat "-Densime.config=" (expand-file-name config-file))
-                            (when ensime-server-logback
-                              (concat "-Dlogback.configurationFile=" ensime-server-logback))
-                            "org.ensime.server.Server"))))
+  (let* ((default-directory cache-dir)
+         (tools-jar (expand-file-name "lib/tools.jar" java-home))
+         (process-environment (append user-env process-environment))
+         (java-command (expand-file-name "bin/java" java-home))
+         (config (ensime-config-load config-file))
+         (ensime-server-version (plist-get config :ensime-server-version))
+         (args (-flatten (list
+                          "-classpath" (ensime--build-classpath (cons tools-jar classpath))
+                          flags
+                          (concat "-Densime.config=" (expand-file-name config-file))
+                          (when ensime-server-logback
+                            (concat "-Dlogback.configurationFile=" ensime-server-logback))
+                          "org.ensime.server.Server"
+                          (if (ensime-lsp-version-p ensime-server-version) "--lsp" nil)
+                          ))))
 
-      (set (make-local-variable 'comint-process-echoes) nil)
-      (set (make-local-variable 'comint-use-prompt-regexp) nil)
-
-      ;; Get rid of default filters including ansi coloring, scroll to bottom,
-      ;; and scanning for password prompt. These use non-trivial cpu.
-      (set (make-local-variable 'comint-output-filter-functions) nil)
-
-      (when ensime--debug-messages
-        (make-local-variable 'comint-output-filter-functions)
-        (push #'(lambda (str) (message "%s" str)) comint-output-filter-functions))
-
-      (insert (format "Starting ENSIME server: %s %s\n"
-                      java-command
-                      (mapconcat 'identity args " ")))
-      (if (executable-find java-command)
-          (comint-exec (current-buffer) buffer java-command nil args)
+    (if (not (executable-find java-command))
         (error "java command %s not found" java-command))
-      ;; Make sure we clean up nicely (required on Windows, or port files won't
-      ;; be removed).
-      (add-hook 'kill-emacs-hook 'ensime-kill-emacs-hook-function)
-      (add-hook 'kill-buffer-hook 'ensime-interrupt-buffer-process nil t)
-      (let ((proc (get-buffer-process (current-buffer))))
-        (ensime-set-query-on-exit-flag proc)
-        (run-hooks 'ensime-server-process-start-hook)
-        proc))))
+
+    (let ((proc 
+           (if (ensime-lsp-version-p ensime-server-version)
+               (ensime--engage-lsp (cons java-command args))
+             (with-current-buffer (get-buffer-create buffer)
+               (comint-mode)
+               (set (make-local-variable 'comint-process-echoes) nil)
+               (set (make-local-variable 'comint-use-prompt-regexp) nil)
+
+               ;; Get rid of default filters including ansi coloring, scroll to bottom,
+               ;; and scanning for password prompt. These use non-trivial cpu.
+               (set (make-local-variable 'comint-output-filter-functions) nil)
+
+               (when ensime--debug-messages
+                 (make-local-variable 'comint-output-filter-functions)
+                 (push #'(lambda (str) (message "%s" str)) comint-output-filter-functions))
+
+               (insert (format "Starting ENSIME server: %s %s\n"
+                               java-command
+                               (mapconcat 'identity args " ")))
+
+               (comint-exec (current-buffer) buffer java-command nil args)
+
+               ;; Make sure we clean up nicely (required on Windows, or port files won't
+               ;; be removed).
+               (add-hook 'kill-emacs-hook 'ensime-kill-emacs-hook-function)
+               (add-hook 'kill-buffer-hook 'ensime-interrupt-buffer-process nil t)
+               (get-buffer-process (current-buffer))
+               ))))
+      (ensime-set-query-on-exit-flag proc)
+      (run-hooks 'ensime-server-process-start-hook)
+      proc)
+
+    ))
 
 (defun ensime-kill-emacs-hook-function ()
   "Swallow and log errors on exit."
@@ -225,7 +242,7 @@ CACHE-DIR is the server's persistent output directory."
   (pcase (version-to-list (car (s-split "-" full-version)))
     (`(2 10 ,_) "2.10")
     (`(2 11 ,_) "2.11")
-    (t (error "unsupported scala version %s" full-version))))
+    (_ (error "unsupported scala version %s" full-version))))
 
 (defun ensime-shutdown ()
   "Terminate the associated ENSIME server (equivalent to killing its buffer)."
