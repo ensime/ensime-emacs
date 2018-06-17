@@ -335,7 +335,11 @@ Used for determining the default in the next one.")
 (defun ensime-inf-postoutput-filter (str)
   ;; Ideally we'd base this on comint's decision on whether it's seen
   ;; a prompt, but that decision hasn't been made by this stage
-  (sleep-for 0.1)
+
+  ; the sleep fights with sbt-comint... ensime-inf-overlay-marker is nil 
+  ; by default and so this filter is a noop by default
+  ; (sleep-for 0.1)
+
   (unless (or (string-equal str "") (string-equal "\n" (substring str -1)))
     (ensime-event-sig :inf-repl-ready)
     (when (markerp  ensime-inf-overlay-marker)
