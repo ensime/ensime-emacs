@@ -229,10 +229,9 @@
   "Apply or undo all hunks in the diff contents of the current buffer."
   (interactive)
   (make-local-variable 'diff-advance-after-apply-hunk)
-  (setq diff-advance-after-apply-hunk nil)
+  (setq diff-advance-after-apply-hunk t)
   (goto-char (point-min))
-  (while (re-search-forward diff-hunk-header-re nil t)
-    (diff-apply-hunk)))
+  (diff-apply-hunk))
 
 (defun ensime-refactor-diff-save-source-files ()
   "Save all source files from the diff contents of the current buffer.
