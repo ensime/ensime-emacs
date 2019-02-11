@@ -431,8 +431,9 @@ the Scala files that are currently open in emacs."
           (search-backward-regexp "\\W" nil t)
           (setq start (+ (point) 1)))
         (save-excursion
-          (search-forward-regexp "\\W" nil t)
-          (setq end (- (point) 1)))
+          (if (search-forward-regexp "\\W" nil t)
+              (setq end (- (point) 1))
+            (setq end (point))))
         (list :start start
               :end end
               :name (buffer-substring-no-properties start end))))))
