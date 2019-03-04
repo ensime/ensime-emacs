@@ -526,7 +526,9 @@ Returns a function/closure to invoke the necessary buffer operations to perform 
         ((equal (point) (point-max)) (newline))
         ; if the import statement is at point-min we can't be above it and are actually at point-at-bol
         ((equal (point) (point-at-eol)) (forward-char 1)))
-      (kill-line)
+      (kill-line (length (s-lines current-import)))
+      (newline)
+      (forward-line -1)
       (->> (ensime-scala-new-import-grouped-package base-package new-imports)
            insert save-excursion)
       (ensime-indent-line))))
@@ -564,7 +566,7 @@ Decide what line to insert QUALIFIED-NAME."
 (defun ensime-scala-new-import-insertion-decisioning-in-import-block (insertion-range starting-point qualified-name)
   "Search through import statements in buffer above INSERTION-RANGE and STARTING-POINT.
 Decide what line to insert QUALIFIED-NAME."
-  (let ((looking-at-import? (looking-at "[\n\t ]*import\\s-\\(.+\\)\n"))
+  (let ((looking-at-import? (looking-at "[\n\t ]*import\\s-\\([^{\n]+\\({[^{}]*}\\)?\\)\n"))
         (matching-import (match-string 1)))
     (cond
      ;; insert at the end of the import block
