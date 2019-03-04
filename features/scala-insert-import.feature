@@ -221,6 +221,38 @@ Feature: Insert Scala Import
     }
     """
 
+  Scenario: Insert Import Groups Import Under The Same Package Into Existing Multiline-Group
+    When I open temp scala file "test"
+    And I insert:
+    """
+    package com.example
+
+    import org.example.{
+      ClassA => AsB,
+      Example1,
+      Example3
+    }
+
+    class C {
+      def f = 1
+    }
+    """
+
+    And I go to line "10"
+    And I go to end of line
+    And I insert import "org.example.Example2"
+
+    Then I should see:
+    """
+    package com.example
+
+    import org.example.{ ClassA => AsB, Example1, Example2, Example3 }
+
+    class C {
+      def f = 1
+    }
+    """
+
   Scenario: Add Class to first import block in file
     When I open temp scala file "test"
     And I insert:
